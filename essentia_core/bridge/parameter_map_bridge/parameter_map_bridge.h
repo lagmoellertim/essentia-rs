@@ -4,19 +4,21 @@
 #include <essentia/parameter.h>
 #include <rust/cxx.h>
 
-namespace essentia_bridge {
+namespace essentia_bridge
+{
 
-class ParameterMapBridge {
-public:
-  ParameterMapBridge();
-  ~ParameterMapBridge();
+  class ParameterMapBridge
+  {
+  public:
+    ParameterMapBridge();
+    ~ParameterMapBridge();
 
-  void add(rust::Str key, std::unique_ptr<VariantData> variant_data);
+    void add(rust::Str key, std::unique_ptr<VariantData> variant_data);
 
-  const essentia::ParameterMap &get_parameter_map() const;
+    const essentia::ParameterMap &get_parameter_map() const;
 
-private:
-  essentia::ParameterMap *_parameter_map;
-};
+  private:
+    essentia::ParameterMap *_parameter_map;
+  };
 
 } // namespace essentia_bridge

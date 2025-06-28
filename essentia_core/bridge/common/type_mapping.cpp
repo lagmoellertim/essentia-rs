@@ -1,5 +1,6 @@
 #include "type_mapping.h"
 #include "essentia_core/src/ffi.rs.h"
+#include <essentia/types.h>
 #include <essentia/utils/tnt/tnt_array2d.h>
 #include <stdexcept>
 #include <string>
@@ -10,12 +11,25 @@ namespace essentia_bridge {
 
 const std::unordered_map<std::type_index, DataType> &get_type_mapping() {
   static const std::unordered_map<std::type_index, DataType> type_map = {
+      {typeid(bool), DataType::Bool},
+      {typeid(std::string), DataType::String},
       {typeid(float), DataType::Float},
       {typeid(int), DataType::Int},
       {typeid(unsigned int), DataType::UnsignedInt},
       {typeid(long), DataType::Long},
+      {typeid(essentia::StereoSample), DataType::StereoSample},
+      {typeid(std::vector<bool>), DataType::VectorBool},
+      {typeid(std::vector<int>), DataType::VectorInt},
+      {typeid(std::vector<std::string>), DataType::VectorString},
       {typeid(std::vector<float>), DataType::VectorFloat},
+      {typeid(std::vector<essentia::StereoSample>),
+       DataType::VectorStereoSample},
       {typeid(std::vector<std::vector<float>>), DataType::VectorVectorFloat},
+      {typeid(std::vector<std::vector<std::string>>),
+       DataType::VectorVectorString},
+      {typeid(std::vector<std::vector<essentia::StereoSample>>),
+       DataType::VectorVectorStereoSample},
+      {typeid(std::vector<TNT::Array2D<float>>), DataType::VectorMatrixFloat},
       {typeid(TNT::Array2D<float>), DataType::MatrixFloat}};
   return type_map;
 }

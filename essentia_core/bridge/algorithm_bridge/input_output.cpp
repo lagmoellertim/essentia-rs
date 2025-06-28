@@ -16,6 +16,14 @@ void AlgorithmBridge::set_input(rust::Str input_name,
 
 void AlgorithmBridge::setup_output(rust::Str output_name, DataType data_type) {
   switch (data_type) {
+  case DataType::Bool:
+    generic_setup_output<bool>(output_name);
+    break;
+
+  case DataType::String:
+    generic_setup_output<std::string>(output_name);
+    break;
+
   case DataType::Float:
     generic_setup_output<float>(output_name);
     break;
@@ -32,12 +40,45 @@ void AlgorithmBridge::setup_output(rust::Str output_name, DataType data_type) {
     generic_setup_output<std::int64_t>(output_name);
     break;
 
+  case DataType::StereoSample:
+    generic_setup_output<essentia::StereoSample>(output_name);
+    break;
+
+  case DataType::VectorBool:
+    generic_setup_output<std::vector<bool>>(output_name);
+    break;
+
+  case DataType::VectorInt:
+    generic_setup_output<std::vector<int>>(output_name);
+    break;
+
+  case DataType::VectorString:
+    generic_setup_output<std::vector<std::string>>(output_name);
+    break;
+
   case DataType::VectorFloat:
     generic_setup_output<std::vector<float>>(output_name);
     break;
 
+  case DataType::VectorStereoSample:
+    generic_setup_output<std::vector<essentia::StereoSample>>(output_name);
+    break;
+
   case DataType::VectorVectorFloat:
     generic_setup_output<std::vector<std::vector<float>>>(output_name);
+    break;
+
+  case DataType::VectorVectorString:
+    generic_setup_output<std::vector<std::vector<std::string>>>(output_name);
+    break;
+
+  case DataType::VectorVectorStereoSample:
+    generic_setup_output<std::vector<std::vector<essentia::StereoSample>>>(
+        output_name);
+    break;
+
+  case DataType::VectorMatrixFloat:
+    generic_setup_output<std::vector<TNT::Array2D<float>>>(output_name);
     break;
 
   case DataType::MatrixFloat:

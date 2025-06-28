@@ -16,6 +16,10 @@ void ParameterMapBridge::add(rust::Str key,
     essentia::ParameterMap *map;
     const std::string &key;
 
+    void operator()(bool value) { map->add(key, essentia::Parameter(value)); }
+    void operator()(const std::string &value) {
+      map->add(key, essentia::Parameter(value));
+    }
     void operator()(float value) { map->add(key, essentia::Parameter(value)); }
     void operator()(int value) { map->add(key, essentia::Parameter(value)); }
     void operator()(unsigned int value) {
@@ -24,14 +28,39 @@ void ParameterMapBridge::add(rust::Str key,
     void operator()(std::int64_t value) {
       map->add(key, essentia::Parameter(static_cast<int>(value)));
     }
-    void operator()(std::vector<float> value) {
-      map->add(key, essentia::Parameter(std::move(value)));
+    void operator()(const essentia::StereoSample &value) {
+      map->add(key, essentia::Parameter(value));
     }
-    void operator()(std::vector<std::vector<float>> value) {
-      map->add(key, essentia::Parameter(std::move(value)));
+    void operator()(const std::vector<bool> &value) {
+      map->add(key, essentia::Parameter(value));
     }
-    void operator()(TNT::Array2D<float> value) {
-      map->add(key, essentia::Parameter(std::move(value)));
+    void operator()(const std::vector<int> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
+    void operator()(const std::vector<std::string> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
+    void operator()(const std::vector<float> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
+    void operator()(const std::vector<essentia::StereoSample> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
+    void operator()(const std::vector<std::vector<float>> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
+    void operator()(const std::vector<std::vector<std::string>> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
+    void
+    operator()(const std::vector<std::vector<essentia::StereoSample>> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
+    void operator()(const std::vector<TNT::Array2D<float>> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
+    void operator()(const TNT::Array2D<float> &value) {
+      map->add(key, essentia::Parameter(value));
     }
   };
 

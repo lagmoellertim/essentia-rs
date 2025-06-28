@@ -5,10 +5,24 @@ pub mod bridge {
         slice: &'a [f32],
     }
 
+    struct VecString {
+        vec: Vec<String>,
+    }
+
+    struct SliceStereoSample<'a> {
+        slice: &'a [StereoSample],
+    }
+
     struct MatrixFloat<'a> {
         slice: &'a [f32],
         dim1: usize,
         dim2: usize,
+    }
+
+    #[derive(Clone, Debug)]
+    struct StereoSample {
+        left: f32,
+        right: f32,
     }
 
     // ===== Data Type Enum =====
@@ -99,27 +113,55 @@ pub mod bridge {
         fn get_output(self: &AlgorithmBridge, output_name: &str) -> Result<&VariantData>;
 
         // ===== VariantData Constructors =====
+        fn create_variant_data_from_bool(value: bool) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_string(value: &str) -> UniquePtr<VariantData>;
         fn create_variant_data_from_float(value: f32) -> UniquePtr<VariantData>;
         fn create_variant_data_from_int(value: i32) -> UniquePtr<VariantData>;
         fn create_variant_data_from_unsigned_int(value: u32) -> UniquePtr<VariantData>;
         fn create_variant_data_from_long(value: i64) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_stereo_sample(value: StereoSample) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_vector_bool(value: &[bool]) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_vector_int(value: &[i32]) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_vector_string(value: &[&str]) -> UniquePtr<VariantData>;
         fn create_variant_data_from_vector_float(value: &[f32]) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_vector_stereo_sample(
+            value: &[StereoSample],
+        ) -> UniquePtr<VariantData>;
         fn create_variant_data_from_vector_vector_float(
             value: Vec<SliceFloat>,
         ) -> UniquePtr<VariantData>;
         fn create_variant_data_from_matrix_float(value: MatrixFloat) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_vector_vector_string(
+            value: Vec<VecString>,
+        ) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_vector_vector_stereo_sample(
+            value: Vec<SliceStereoSample>,
+        ) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_vector_matrix_float(
+            value: Vec<MatrixFloat>,
+        ) -> UniquePtr<VariantData>;
 
         // ===== VariantData Introspection =====
         fn get_data_type(self: &VariantData) -> DataType;
 
         // ===== VariantData Accessors =====
+        fn get_bool(self: &VariantData) -> Result<bool>;
+        fn get_string(self: &VariantData) -> Result<String>;
         fn get_float(self: &VariantData) -> Result<f32>;
         fn get_int(self: &VariantData) -> Result<i32>;
         fn get_unsigned_int(self: &VariantData) -> Result<u32>;
         fn get_long(self: &VariantData) -> Result<i64>;
+        fn get_stereo_sample(self: &VariantData) -> Result<StereoSample>;
+        fn get_vector_bool(self: &VariantData) -> Result<Vec<bool>>;
+        fn get_vector_int(self: &VariantData) -> Result<&[i32]>;
+        fn get_vector_string(self: &VariantData) -> Result<Vec<String>>;
         fn get_vector_float(self: &VariantData) -> Result<&[f32]>;
+        fn get_vector_stereo_sample(self: &VariantData) -> Result<&[StereoSample]>;
         fn get_vector_vector_float(self: &VariantData) -> Result<Vec<SliceFloat>>;
         fn get_matrix_float(self: &VariantData) -> Result<MatrixFloat>;
+        fn get_vector_vector_string(self: &VariantData) -> Result<Vec<VecString>>;
+        fn get_vector_vector_stereo_sample(self: &VariantData) -> Result<Vec<SliceStereoSample>>;
+        fn get_vector_matrix_float(self: &VariantData) -> Result<Vec<MatrixFloat>>;
 
         // ===== ParameterMap =====
         fn create_parameter_map() -> UniquePtr<ParameterMapBridge>;
