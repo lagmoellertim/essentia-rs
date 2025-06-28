@@ -1,7 +1,6 @@
 #[cxx::bridge(namespace = "essentia_bridge")]
 pub mod bridge {
     // ===== Helper Structs =====
-    
     struct SliceFloat<'a> {
         slice: &'a [f32],
     }
@@ -13,7 +12,6 @@ pub mod bridge {
     }
 
     // ===== Data Type Enum =====
-    
     #[derive(Debug, Clone, Copy)]
     enum DataType {
         Float,
@@ -40,7 +38,6 @@ pub mod bridge {
     }
 
     // ===== Introspection Structs =====
-    
     struct ParameterInfo {
         name: String,
         data_type: DataType,
@@ -56,7 +53,6 @@ pub mod bridge {
     }
 
     // ===== C++ Bridge =====
-    
     unsafe extern "C++" {
         include!("bridge/bridge.h");
 
@@ -82,7 +78,10 @@ pub mod bridge {
         fn get_outputs(self: &AlgorithmBridge) -> Vec<InputOutputInfo>;
 
         // ===== Algorithm Configuration & Execution =====
-        fn configure(self: Pin<&mut AlgorithmBridge>, parameter_map: &ParameterMapBridge) -> Result<()>;
+        fn configure(
+            self: Pin<&mut AlgorithmBridge>,
+            parameter_map: &ParameterMapBridge,
+        ) -> Result<()>;
         fn compute(self: Pin<&mut AlgorithmBridge>) -> Result<()>;
         fn reset(self: Pin<&mut AlgorithmBridge>) -> Result<()>;
 
@@ -92,7 +91,11 @@ pub mod bridge {
             input_name: &str,
             variant_data: UniquePtr<VariantData>,
         ) -> Result<()>;
-        fn setup_output(self: Pin<&mut AlgorithmBridge>, output_name: &str, data_type: DataType) -> Result<()>;
+        fn setup_output(
+            self: Pin<&mut AlgorithmBridge>,
+            output_name: &str,
+            data_type: DataType,
+        ) -> Result<()>;
         fn get_output(self: &AlgorithmBridge, output_name: &str) -> Result<&VariantData>;
 
         // ===== VariantData Constructors =====
@@ -101,8 +104,13 @@ pub mod bridge {
         fn create_variant_data_from_unsigned_int(value: u32) -> UniquePtr<VariantData>;
         fn create_variant_data_from_long(value: i64) -> UniquePtr<VariantData>;
         fn create_variant_data_from_vector_float(value: &[f32]) -> UniquePtr<VariantData>;
-        fn create_variant_data_from_vector_vector_float(value: Vec<SliceFloat>) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_vector_vector_float(
+            value: Vec<SliceFloat>,
+        ) -> UniquePtr<VariantData>;
         fn create_variant_data_from_matrix_float(value: MatrixFloat) -> UniquePtr<VariantData>;
+
+        // ===== VariantData Introspection =====
+        fn get_data_type(self: &VariantData) -> DataType;
 
         // ===== VariantData Accessors =====
         fn get_float(self: &VariantData) -> Result<f32>;
@@ -115,7 +123,11 @@ pub mod bridge {
 
         // ===== ParameterMap =====
         fn create_parameter_map() -> UniquePtr<ParameterMapBridge>;
-        fn add(self: Pin<&mut ParameterMapBridge>, key: &str, variant_data: UniquePtr<VariantData>) -> Result<()>;
+        fn add(
+            self: Pin<&mut ParameterMapBridge>,
+            key: &str,
+            variant_data: UniquePtr<VariantData>,
+        ) -> Result<()>;
     }
 }
 

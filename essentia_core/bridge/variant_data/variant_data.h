@@ -8,19 +8,23 @@
 
 namespace essentia_bridge {
 
+enum class DataType : std::uint8_t;
+
 struct SliceFloat;
 struct MatrixFloat;
 
 struct VariantData {
-  using DataType =
+  using StorageType =
       std::variant<float, int, unsigned int, std::int64_t, std::vector<float>,
                    std::vector<std::vector<float>>, TNT::Array2D<float>>;
-  DataType data;
+  StorageType data;
 
   VariantData() = default;
 
   template <typename T>
   explicit VariantData(T &&value) : data(std::forward<T>(value)) {}
+
+  DataType get_data_type() const;
 
   float get_float() const;
   int get_int() const;

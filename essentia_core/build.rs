@@ -7,6 +7,8 @@ fn main() {
         .file("bridge/parameter_map_bridge/parameter_map_bridge.cpp")
         .file("bridge/variant_data/accessors.cpp")
         .file("bridge/variant_data/constructors.cpp")
+        .file("bridge/variant_data/introspection.cpp")
+        .file("bridge/common/type_mapping.cpp")
         .include("target") // Include target directory so essentia/bridge/bridge.h can be found
         .include("bridge") // Add bridge directory to include path
         .include(".") // Add project root to include path for bridge/bridge.h

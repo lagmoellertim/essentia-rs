@@ -1,3 +1,4 @@
+#include "../common/type_mapping.h"
 #include "algorithm_bridge.h"
 #include "essentia/algorithmfactory.h"
 #include "essentia_core/src/ffi.rs.h"
@@ -47,27 +48,6 @@ essentia_param_type_to_enum(essentia::Parameter::ParamType essentia_type) {
   if (it == parameterTypeLookupMap.end())
     throw std::invalid_argument{
         "essentia_param_type_to_enum: unsupported parameter type"};
-
-  return it->second;
-}
-
-static const std::unordered_map<std::type_index, DataType> ioTypeLookupMap = {
-    {typeid(float), DataType::Float},
-    {typeid(int), DataType::Int},
-    {typeid(unsigned int), DataType::UnsignedInt},
-    {typeid(long), DataType::Long},
-    {typeid(std::vector<float>), DataType::VectorFloat},
-    {typeid(std::vector<std::vector<float>>), DataType::VectorVectorFloat},
-    {typeid(TNT::Array2D<float>), DataType::MatrixFloat}};
-
-DataType type_info_to_io_enum(const std::type_info *type_info) {
-  if (type_info == nullptr)
-    throw std::invalid_argument{"type_info_to_io_enum: null pointer"};
-
-  const auto it = ioTypeLookupMap.find(*type_info);
-  if (it == ioTypeLookupMap.end())
-    throw std::invalid_argument{"type_info_to_io_enum: unsupported type (" +
-                                std::string(type_info->name()) + ')'};
 
   return it->second;
 }
@@ -144,7 +124,7 @@ rust::Vec<InputOutputInfo> AlgorithmBridge::get_inputs() const {
   for (size_t i = 0; i < input_names.size() && i < input_types.size(); ++i) {
     InputOutputInfo info;
     info.name = input_names[i];
-    info.data_type = type_info_to_io_enum(input_types[i]);
+    info.data_type = type_info_to_data_type(*input_types[i]);
 
     auto desc_it = input_descriptions.find(input_names[i]);
     info.description =
@@ -166,7 +146,7 @@ rust::Vec<InputOutputInfo> AlgorithmBridge::get_outputs() const {
   for (size_t i = 0; i < output_names.size() && i < output_types.size(); ++i) {
     InputOutputInfo info;
     info.name = output_names[i];
-    info.data_type = type_info_to_io_enum(output_types[i]);
+    info.data_type = type_info_to_data_type(*output_types[i]);
 
     auto desc_it = output_descriptions.find(output_names[i]);
     info.description =
