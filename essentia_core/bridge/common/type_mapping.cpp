@@ -2,6 +2,7 @@
 #include "essentia_core/src/ffi.rs.h"
 #include <essentia/types.h>
 #include <essentia/utils/tnt/tnt_array2d.h>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
@@ -30,7 +31,13 @@ const std::unordered_map<std::type_index, DataType> &get_type_mapping() {
       {typeid(std::vector<std::vector<essentia::StereoSample>>),
        DataType::VectorVectorStereoSample},
       {typeid(std::vector<TNT::Array2D<float>>), DataType::VectorMatrixFloat},
-      {typeid(TNT::Array2D<float>), DataType::MatrixFloat}};
+      {typeid(TNT::Array2D<float>), DataType::MatrixFloat},
+      {typeid(std::map<std::string, std::vector<float>>),
+       DataType::MapVectorFloat},
+      {typeid(std::map<std::string, std::vector<std::string>>),
+       DataType::MapVectorString},
+      {typeid(std::map<std::string, std::vector<int>>), DataType::MapVectorInt},
+      {typeid(std::map<std::string, float>), DataType::MapFloat}};
   return type_map;
 }
 

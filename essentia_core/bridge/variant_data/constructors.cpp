@@ -1,6 +1,7 @@
 #include "essentia_core/src/ffi.rs.h"
 #include "variant_data.h"
 #include <cstring>
+#include <map>
 #include <memory>
 #include <rust/cxx.h>
 #include <string>
@@ -170,6 +171,63 @@ create_variant_data_from_vector_matrix_float(rust::Vec<MatrixFloat> value) {
   }
 
   return std::make_unique<VariantData>(std::move(cpp_vec));
+}
+
+std::unique_ptr<VariantData> create_variant_data_from_map_vector_float(
+    rust::Vec<MapEntryVectorFloat> value) {
+  std::map<std::string, std::vector<float>> cpp_map;
+
+  for (const auto &entry : value) {
+    std::string key(entry.key);
+    const auto *data = entry.value.data();
+    size_t size = entry.value.size();
+    cpp_map[key] = std::vector<float>(data, data + size);
+  }
+
+  return std::make_unique<VariantData>(std::move(cpp_map));
+}
+
+std::unique_ptr<VariantData> create_variant_data_from_map_vector_string(
+    rust::Vec<MapEntryVectorString> value) {
+  std::map<std::string, std::vector<std::string>> cpp_map;
+
+  for (const auto &entry : value) {
+    std::string key(entry.key);
+    std::vector<std::string> values;
+    values.reserve(entry.value.size());
+    for (const auto &str : entry.value) {
+      values.push_back(std::string(str));
+    }
+    cpp_map[key] = std::move(values);
+  }
+
+  return std::make_unique<VariantData>(std::move(cpp_map));
+}
+
+std::unique_ptr<VariantData>
+create_variant_data_from_map_vector_int(rust::Vec<MapEntryVectorInt> value) {
+  std::map<std::string, std::vector<int>> cpp_map;
+
+  for (const auto &entry : value) {
+    std::string key(entry.key);
+    const auto *data = entry.value.data();
+    size_t size = entry.value.size();
+    cpp_map[key] = std::vector<int>(data, data + size);
+  }
+
+  return std::make_unique<VariantData>(std::move(cpp_map));
+}
+
+std::unique_ptr<VariantData>
+create_variant_data_from_map_float(rust::Vec<MapEntryFloat> value) {
+  std::map<std::string, float> cpp_map;
+
+  for (const auto &entry : value) {
+    std::string key(entry.key);
+    cpp_map[key] = entry.value;
+  }
+
+  return std::make_unique<VariantData>(std::move(cpp_map));
 }
 
 } // namespace essentia_bridge

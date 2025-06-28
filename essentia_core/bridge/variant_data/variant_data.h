@@ -2,6 +2,7 @@
 
 #include <essentia/types.h>
 #include <essentia/utils/tnt/tnt_array2d.h>
+#include <map>
 #include <memory>
 #include <rust/cxx.h>
 #include <variant>
@@ -16,17 +17,23 @@ struct MatrixFloat;
 struct StereoSample;
 struct VecString;
 struct SliceStereoSample;
+struct MapEntryVectorFloat;
+struct MapEntryVectorString;
+struct MapEntryVectorInt;
+struct MapEntryFloat;
 
 struct VariantData {
-  using StorageType =
-      std::variant<bool, std::string, float, int, unsigned int, std::int64_t,
-                   essentia::StereoSample, std::vector<bool>, std::vector<int>,
-                   std::vector<std::string>, std::vector<float>,
-                   std::vector<essentia::StereoSample>,
-                   std::vector<std::vector<float>>, TNT::Array2D<float>,
-                   std::vector<std::vector<std::string>>,
-                   std::vector<std::vector<essentia::StereoSample>>,
-                   std::vector<TNT::Array2D<float>>>;
+  using StorageType = std::variant<
+      bool, std::string, float, int, unsigned int, std::int64_t,
+      essentia::StereoSample, std::vector<bool>, std::vector<int>,
+      std::vector<std::string>, std::vector<float>,
+      std::vector<essentia::StereoSample>, std::vector<std::vector<float>>,
+      TNT::Array2D<float>, std::vector<std::vector<std::string>>,
+      std::vector<std::vector<essentia::StereoSample>>,
+      std::vector<TNT::Array2D<float>>,
+      std::map<std::string, std::vector<float>>,
+      std::map<std::string, std::vector<std::string>>,
+      std::map<std::string, std::vector<int>>, std::map<std::string, float>>;
   StorageType data;
 
   VariantData() = default;
@@ -53,6 +60,10 @@ struct VariantData {
   rust::Vec<VecString> get_vector_vector_string() const;
   rust::Vec<SliceStereoSample> get_vector_vector_stereo_sample() const;
   rust::Vec<MatrixFloat> get_vector_matrix_float() const;
+  rust::Vec<MapEntryVectorFloat> get_map_vector_float() const;
+  rust::Vec<MapEntryVectorString> get_map_vector_string() const;
+  rust::Vec<MapEntryVectorInt> get_map_vector_int() const;
+  rust::Vec<MapEntryFloat> get_map_float() const;
 };
 
 std::unique_ptr<VariantData> create_variant_data_from_bool(bool value);
@@ -85,5 +96,13 @@ create_variant_data_from_vector_vector_stereo_sample(
     rust::Vec<SliceStereoSample> value);
 std::unique_ptr<VariantData>
 create_variant_data_from_vector_matrix_float(rust::Vec<MatrixFloat> value);
+std::unique_ptr<VariantData>
+create_variant_data_from_map_vector_float(rust::Vec<MapEntryVectorFloat> value);
+std::unique_ptr<VariantData> create_variant_data_from_map_vector_string(
+    rust::Vec<MapEntryVectorString> value);
+std::unique_ptr<VariantData>
+create_variant_data_from_map_vector_int(rust::Vec<MapEntryVectorInt> value);
+std::unique_ptr<VariantData>
+create_variant_data_from_map_float(rust::Vec<MapEntryFloat> value);
 
 } // namespace essentia_bridge

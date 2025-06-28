@@ -85,6 +85,24 @@ void AlgorithmBridge::setup_output(rust::Str output_name, DataType data_type) {
     generic_setup_output<TNT::Array2D<float>>(output_name);
     break;
 
+  case DataType::MapVectorFloat:
+    generic_setup_output<std::map<std::string, std::vector<float>>>(
+        output_name);
+    break;
+
+  case DataType::MapVectorString:
+    generic_setup_output<std::map<std::string, std::vector<std::string>>>(
+        output_name);
+    break;
+
+  case DataType::MapVectorInt:
+    generic_setup_output<std::map<std::string, std::vector<int>>>(output_name);
+    break;
+
+  case DataType::MapFloat:
+    generic_setup_output<std::map<std::string, float>>(output_name);
+    break;
+
   default:
     throw std::invalid_argument{"AlgorithmWrapper::setup_output: "
                                 "unsupported DataType value"};

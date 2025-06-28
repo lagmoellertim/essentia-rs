@@ -19,6 +19,26 @@ pub mod bridge {
         dim2: usize,
     }
 
+    struct MapEntryVectorFloat<'a> {
+        key: String,
+        value: &'a [f32],
+    }
+
+    struct MapEntryVectorString {
+        key: String,
+        value: Vec<String>,
+    }
+
+    struct MapEntryVectorInt<'a> {
+        key: String,
+        value: &'a [i32],
+    }
+
+    struct MapEntryFloat {
+        key: String,
+        value: f32,
+    }
+
     #[derive(Clone, Debug)]
     struct StereoSample {
         left: f32,
@@ -140,6 +160,16 @@ pub mod bridge {
         fn create_variant_data_from_vector_matrix_float(
             value: Vec<MatrixFloat>,
         ) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_map_vector_float(
+            value: Vec<MapEntryVectorFloat>,
+        ) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_map_vector_string(
+            value: Vec<MapEntryVectorString>,
+        ) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_map_vector_int(
+            value: Vec<MapEntryVectorInt>,
+        ) -> UniquePtr<VariantData>;
+        fn create_variant_data_from_map_float(value: Vec<MapEntryFloat>) -> UniquePtr<VariantData>;
 
         // ===== VariantData Introspection =====
         fn get_data_type(self: &VariantData) -> DataType;
@@ -162,6 +192,10 @@ pub mod bridge {
         fn get_vector_vector_string(self: &VariantData) -> Result<Vec<VecString>>;
         fn get_vector_vector_stereo_sample(self: &VariantData) -> Result<Vec<SliceStereoSample>>;
         fn get_vector_matrix_float(self: &VariantData) -> Result<Vec<MatrixFloat>>;
+        fn get_map_vector_float(self: &VariantData) -> Result<Vec<MapEntryVectorFloat>>;
+        fn get_map_vector_string(self: &VariantData) -> Result<Vec<MapEntryVectorString>>;
+        fn get_map_vector_int(self: &VariantData) -> Result<Vec<MapEntryVectorInt>>;
+        fn get_map_float(self: &VariantData) -> Result<Vec<MapEntryFloat>>;
 
         // ===== ParameterMap =====
         fn create_parameter_map() -> UniquePtr<ParameterMapBridge>;

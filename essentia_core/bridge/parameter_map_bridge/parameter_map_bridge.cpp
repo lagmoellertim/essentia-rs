@@ -62,6 +62,19 @@ void ParameterMapBridge::add(rust::Str key,
     void operator()(const TNT::Array2D<float> &value) {
       map->add(key, essentia::Parameter(value));
     }
+    void operator()(const std::map<std::string, std::vector<float>> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
+    void
+    operator()(const std::map<std::string, std::vector<std::string>> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
+    void operator()(const std::map<std::string, std::vector<int>> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
+    void operator()(const std::map<std::string, float> &value) {
+      map->add(key, essentia::Parameter(value));
+    }
   };
 
   std::visit(Visitor{_parameter_map, str_key}, variant_data->data);

@@ -1,6 +1,7 @@
 #include "essentia_core/src/ffi.rs.h"
 #include "variant_data.h"
 #include <cstring>
+#include <map>
 #include <rust/cxx.h>
 #include <string>
 
@@ -168,6 +169,75 @@ rust::Vec<MatrixFloat> VariantData::get_vector_matrix_float() const {
     rust_matrix.slice = rust::Slice<const float>(&matrix[0][0], dim1 * dim2);
 
     rust_vec.push_back(rust_matrix);
+  }
+
+  return rust_vec;
+}
+
+rust::Vec<MapEntryVectorFloat> VariantData::get_map_vector_float() const {
+  const auto &map = std::get<std::map<std::string, std::vector<float>>>(data);
+
+  rust::Vec<MapEntryVectorFloat> rust_vec;
+  rust_vec.reserve(map.size());
+
+  for (const auto &[key, value] : map) {
+    MapEntryVectorFloat entry;
+    entry.key = rust::String(key);
+    entry.value = rust::Slice<const float>(value.data(), value.size());
+    rust_vec.push_back(entry);
+  }
+
+  return rust_vec;
+}
+
+rust::Vec<MapEntryVectorString> VariantData::get_map_vector_string() const {
+  const auto &map =
+      std::get<std::map<std::string, std::vector<std::string>>>(data);
+
+  rust::Vec<MapEntryVectorString> rust_vec;
+  rust_vec.reserve(map.size());
+
+  for (const auto &[key, value] : map) {
+    MapEntryVectorString entry;
+    entry.key = rust::String(key);
+    entry.value = rust::Vec<rust::String>();
+    entry.value.reserve(value.size());
+    for (const auto &str : value) {
+      entry.value.push_back(rust::String(str));
+    }
+    rust_vec.push_back(entry);
+  }
+
+  return rust_vec;
+}
+
+rust::Vec<MapEntryVectorInt> VariantData::get_map_vector_int() const {
+  const auto &map = std::get<std::map<std::string, std::vector<int>>>(data);
+
+  rust::Vec<MapEntryVectorInt> rust_vec;
+  rust_vec.reserve(map.size());
+
+  for (const auto &[key, value] : map) {
+    MapEntryVectorInt entry;
+    entry.key = rust::String(key);
+    entry.value = rust::Slice<const int>(value.data(), value.size());
+    rust_vec.push_back(entry);
+  }
+
+  return rust_vec;
+}
+
+rust::Vec<MapEntryFloat> VariantData::get_map_float() const {
+  const auto &map = std::get<std::map<std::string, float>>(data);
+
+  rust::Vec<MapEntryFloat> rust_vec;
+  rust_vec.reserve(map.size());
+
+  for (const auto &[key, value] : map) {
+    MapEntryFloat entry;
+    entry.key = rust::String(key);
+    entry.value = value;
+    rust_vec.push_back(entry);
   }
 
   return rust_vec;
