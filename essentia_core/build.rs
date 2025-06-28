@@ -1,12 +1,12 @@
 fn main() {
     cxx_build::bridge("src/ffi.rs")
         .file("bridge/bridge.cpp")
-        .file("bridge/algorithm_core.cpp")
-        .file("bridge/algorithm_input_set.cpp")
-        .file("bridge/algorithm_output_setup.cpp")
-        .file("bridge/algorithm_output_get.cpp")
-        .file("bridge/algorithm_metadata.cpp")
-        .file("bridge/parameter_map.cpp")
+        .file("bridge/algorithm_bridge/core.cpp")
+        .file("bridge/algorithm_bridge/input_output.cpp")
+        .file("bridge/algorithm_bridge/introspection.cpp")
+        .file("bridge/parameter_map_bridge/parameter_map_bridge.cpp")
+        .file("bridge/variant_data/accessors.cpp")
+        .file("bridge/variant_data/constructors.cpp")
         .include("target") // Include target directory so essentia/bridge/bridge.h can be found
         .include("bridge") // Add bridge directory to include path
         .include(".") // Add project root to include path for bridge/bridge.h
