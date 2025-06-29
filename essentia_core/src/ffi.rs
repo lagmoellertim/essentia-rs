@@ -101,20 +101,20 @@ pub mod bridge {
 
         // ===== Algorithm Creation =====
         fn get_algorithm_names() -> Vec<String>;
-        fn create_algorithm(name: &str) -> Result<UniquePtr<AlgorithmBridge>>;
+        fn create_algorithm_bridge(name: &str) -> Result<UniquePtr<AlgorithmBridge>>;
 
         // ===== Algorithm Introspection =====
         fn get_name(self: &AlgorithmBridge) -> String;
         fn get_category(self: &AlgorithmBridge) -> String;
         fn get_description(self: &AlgorithmBridge) -> String;
-        fn get_parameters(self: &AlgorithmBridge) -> Vec<ParameterInfo>;
-        fn get_inputs(self: &AlgorithmBridge) -> Vec<InputOutputInfo>;
-        fn get_outputs(self: &AlgorithmBridge) -> Vec<InputOutputInfo>;
+        fn get_parameter_infos(self: &AlgorithmBridge) -> Vec<ParameterInfo>;
+        fn get_input_infos(self: &AlgorithmBridge) -> Vec<InputOutputInfo>;
+        fn get_output_infos(self: &AlgorithmBridge) -> Vec<InputOutputInfo>;
 
         // ===== Algorithm Configuration & Execution =====
         fn configure(
             self: Pin<&mut AlgorithmBridge>,
-            parameter_map: &ParameterMapBridge,
+            parameter_map_bridge: UniquePtr<ParameterMapBridge>,
         ) -> Result<()>;
         fn compute(self: Pin<&mut AlgorithmBridge>) -> Result<()>;
         fn reset(self: Pin<&mut AlgorithmBridge>) -> Result<()>;
@@ -198,7 +198,7 @@ pub mod bridge {
         fn get_map_float(self: &VariantData) -> Result<Vec<MapEntryFloat>>;
 
         // ===== ParameterMap =====
-        fn create_parameter_map() -> UniquePtr<ParameterMapBridge>;
+        fn create_parameter_map_bridge() -> UniquePtr<ParameterMapBridge>;
         fn add(
             self: Pin<&mut ParameterMapBridge>,
             key: &str,

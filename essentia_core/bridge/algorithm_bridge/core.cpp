@@ -8,8 +8,8 @@ AlgorithmBridge::AlgorithmBridge(essentia::standard::Algorithm *algorithm)
 AlgorithmBridge::~AlgorithmBridge() { delete _algorithm; }
 
 void AlgorithmBridge::configure(
-    const ParameterMapBridge &parameter_map_wrapper) {
-  _algorithm->configure(parameter_map_wrapper.get_parameter_map());
+    std::unique_ptr<ParameterMapBridge> parameter_map_bridge) {
+  _algorithm->configure(parameter_map_bridge->get_parameter_map());
 }
 
 void AlgorithmBridge::compute() { _algorithm->compute(); }

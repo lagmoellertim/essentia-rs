@@ -80,12 +80,15 @@ void ParameterMapBridge::add(rust::Str key,
   std::visit(Visitor{_parameter_map, str_key}, variant_data->data);
 }
 
-std::unique_ptr<ParameterMapBridge> create_parameter_map() {
+std::unique_ptr<ParameterMapBridge> create_parameter_map_bridge() {
   return std::make_unique<ParameterMapBridge>();
 }
 
-const essentia::ParameterMap &ParameterMapBridge::get_parameter_map() const {
-  return *_parameter_map;
+essentia::ParameterMap ParameterMapBridge::get_parameter_map() {
+  essentia::ParameterMap result = std::move(*_parameter_map);
+  delete _parameter_map;
+  _parameter_map = nullptr;
+  return result;
 }
 
 } // namespace essentia_bridge
