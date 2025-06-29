@@ -1,84 +1,181 @@
 use std::marker::PhantomData;
 
 use cxx::UniquePtr;
-use thiserror::Error;
 
 use crate::{
     essentia::Essentia,
     ffi,
-    input_value::InputValue,
-    output_value::{OutputConvertError, OutputValue},
-    parameter_map::Parameters,
+    input_output::InputOutput,
+    parameter::{Parameter, parameter_map::ParameterMap},
+    variant_data::{DataType, VariantData, from_other::TryIntoVariantData},
 };
 
+pub mod error;
 mod introspection;
 
+pub use error::*;
 pub use introspection::*;
 
-pub struct Initialized;
+pub struct Initialized {
+    parameter_map: ParameterMap,
+}
+
 pub struct Configured;
 
 pub struct Algorithm<'a, State> {
-    ffi_bridge: UniquePtr<ffi::AlgorithmBridge>,
+    algorithm_bridge: UniquePtr<ffi::AlgorithmBridge>,
+    state: State,
     introspection: AlgorithmIntrospection,
-    _marker: PhantomData<(&'a Essentia, State)>,
+    _marker: PhantomData<&'a Essentia>,
 }
 
 impl<'a> Algorithm<'a, Initialized> {
-    pub(crate) fn new(algorithm: UniquePtr<ffi::AlgorithmBridge>) -> Self {
-        let introspection = AlgorithmIntrospection::from_algorithm(&algorithm);
+    pub(crate) fn new(algorithm_bridge: UniquePtr<ffi::AlgorithmBridge>) -> Self {
+        let introspection = AlgorithmIntrospection::from_algorithm_bridge(&algorithm_bridge);
 
         Self {
-            ffi_bridge: algorithm,
+            algorithm_bridge,
+            state: Initialized {
+                parameter_map: ParameterMap::new(),
+            },
             introspection,
             _marker: PhantomData,
         }
     }
 
-    pub fn configure(mut self, parameter_map: &Parameters) -> Algorithm<'a, Configured> {
-        self.ffi_bridge.pin_mut().configure(&parameter_map.inner);
+    pub fn parameter<T, V>(mut self, key: &str, value: V) -> Result<Self, ParameterError>
+    where
+        V: TryIntoVariantData<T>,
+        T: Parameter,
+    {
+        self.set_parameter(key, value)?;
+        Ok(self)
+    }
 
-        Algorithm {
-            ffi_bridge: self.ffi_bridge,
+    pub fn set_parameter<T, V>(&mut self, key: &str, value: V) -> Result<(), ParameterError>
+    where
+        V: TryIntoVariantData<T>,
+        T: Parameter,
+    {
+        let param_info = self.introspection.get_parameter(key).ok_or_else(|| {
+            ParameterError::ParameterNotFound {
+                parameter: key.to_string(),
+            }
+        })?;
+
+        if param_info.parameter_type() != T::parameter_type() {
+            return Err(ParameterError::TypeMismatch {
+                parameter: key.to_string(),
+                expected: T::parameter_type(),
+                actual: param_info.parameter_type(),
+            });
+        }
+
+        let variant_data =
+            value
+                .try_into_variant_data()
+                .map_err(|error| ParameterError::DataConversion {
+                    parameter: key.to_string(),
+                    source: error,
+                })?;
+
+        self.state.parameter_map.set_parameter(key, variant_data);
+
+        Ok(())
+    }
+
+    pub fn configure(mut self) -> Result<Algorithm<'a, Configured>, ConfigurationError> {
+        self.algorithm_bridge
+            .pin_mut()
+            .configure(self.state.parameter_map.parameter_map_bridge)?;
+
+        Ok(Algorithm {
+            algorithm_bridge: self.algorithm_bridge,
+            state: Configured,
             introspection: self.introspection,
             _marker: PhantomData,
-        }
+        })
     }
 }
 
 impl<'a> Algorithm<'a, Configured> {
-    pub fn input<T: Into<InputValue<'a>>>(&mut self, input_name: &str, value: T) -> &mut Self {
-        value
-            .into()
-            .set_as_input(self.ffi_bridge.pin_mut(), input_name);
-
-        self
+    pub fn input<T, V>(mut self, key: &str, value: V) -> Result<Self, InputError>
+    where
+        V: TryIntoVariantData<T>,
+        T: InputOutput,
+    {
+        self.set_input(key, value)?;
+        Ok(self)
     }
 
-    pub fn compute(&mut self) -> ComputeResult<'a, '_> {
-        for output in self.introspection.outputs() {
-            self.ffi_bridge
-                .pin_mut()
-                .setup_output(output.name(), output.data_type().into());
+    pub fn set_input<T, V>(&mut self, key: &str, value: V) -> Result<(), InputError>
+    where
+        V: TryIntoVariantData<T>,
+        T: InputOutput,
+    {
+        let input_info =
+            self.introspection
+                .get_input(key)
+                .ok_or_else(|| InputError::InputNotFound {
+                    input: key.to_string(),
+                })?;
+
+        if input_info.input_output_type() != T::input_output_type() {
+            return Err(InputError::TypeMismatch {
+                input: key.to_string(),
+                expected: T::input_output_type(),
+                actual: input_info.input_output_type(),
+            });
         }
 
-        self.ffi_bridge.pin_mut().compute();
+        let variant_data =
+            value
+                .try_into_variant_data()
+                .map_err(|error| InputError::DataConversion {
+                    input: key.to_string(),
+                    source: error,
+                })?;
 
-        ComputeResult { algorithm: self }
+        let owned_ptr = variant_data.into_owned_ptr();
+
+        self.algorithm_bridge
+            .pin_mut()
+            .set_input(key, owned_ptr)
+            .map_err(|exception| InputError::Internal {
+                input: key.to_string(),
+                source: exception,
+            })?;
+
+        Ok(())
     }
 
-    pub fn reset(&mut self) {
-        self.ffi_bridge.pin_mut().reset();
+    pub fn compute(&mut self) -> Result<ComputeResult<'a, '_>, ComputationError> {
+        for output in self.introspection.outputs() {
+            let data_type = DataType::from(output.input_output_type());
+
+            self.algorithm_bridge
+                .pin_mut()
+                .setup_output(output.name(), data_type.into())
+                .map_err(|exception| ComputationError::OutputSetup {
+                    output: output.name().to_string(),
+                    source: exception,
+                })?;
+        }
+
+        self.algorithm_bridge
+            .pin_mut()
+            .compute()
+            .map_err(ComputationError::Compute)?;
+
+        Ok(ComputeResult { algorithm: self })
     }
-}
 
-#[derive(Debug, Error)]
-pub enum OutputRetrievalError {
-    #[error("no output named `{0}` found")]
-    InvalidOutput(String),
-
-    #[error(transparent)]
-    Conversion(#[from] OutputConvertError),
+    pub fn reset(&mut self) -> Result<(), ResetError> {
+        self.algorithm_bridge
+            .pin_mut()
+            .reset()
+            .map_err(ResetError::Internal)
+    }
 }
 
 pub struct ComputeResult<'algorithm, 'result> {
@@ -86,21 +183,36 @@ pub struct ComputeResult<'algorithm, 'result> {
 }
 
 impl<'algorithm, 'result> ComputeResult<'algorithm, 'result> {
-    pub fn get<T: TryFrom<OutputValue<'result>, Error = OutputConvertError>>(
-        &self,
-        output_name: &str,
-    ) -> Result<T, OutputRetrievalError> {
-        let output_type = self
+    pub fn output<T>(&self, key: &str) -> Result<VariantData<'result, T>, OutputError>
+    where
+        T: InputOutput,
+    {
+        let output_info = self
             .algorithm
             .introspection
-            .get_output(output_name)
-            .ok_or(OutputRetrievalError::InvalidOutput(output_name.to_string()))?
-            .data_type();
+            .get_output(key)
+            .ok_or_else(|| OutputError::OutputNotFound {
+                output: key.to_string(),
+            })?;
 
-        let result =
-            OutputValue::get_from_output(&self.algorithm.ffi_bridge, output_name, output_type)
-                .try_into()?;
+        if output_info.input_output_type() != T::input_output_type() {
+            return Err(OutputError::TypeMismatch {
+                output: key.to_string(),
+                expected: T::input_output_type(),
+                actual: output_info.input_output_type(),
+            });
+        }
 
-        Ok(result)
+        let variant_data = self
+            .algorithm
+            .algorithm_bridge
+            .get_output(key)
+            .map(|ffi_variant_data| VariantData::new_borrowed(ffi_variant_data))
+            .map_err(|exception| OutputError::Internal {
+                output: key.to_string(),
+                source: exception,
+            })?;
+
+        Ok(variant_data)
     }
 }

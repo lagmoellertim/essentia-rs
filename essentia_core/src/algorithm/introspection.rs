@@ -1,5 +1,5 @@
-use crate::ffi;
-use core::fmt;
+use crate::{ffi, input_output::InputOutputType, parameter::ParameterType, variant_data::DataType};
+
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -7,47 +7,47 @@ pub struct AlgorithmIntrospection {
     name: String,
     category: String,
     description: String,
-    input_definitions: HashMap<String, InputOutputDefinition>,
-    output_definitions: HashMap<String, InputOutputDefinition>,
-    parameter_definitions: HashMap<String, ParameterDefinition>,
+    input_infos: HashMap<String, InputOutputInfo>,
+    output_infos: HashMap<String, InputOutputInfo>,
+    parameter_infos: HashMap<String, ParameterInfo>,
 }
 
 impl AlgorithmIntrospection {
-    pub fn from_algorithm(ffi_bridge: &ffi::AlgorithmBridge) -> Self {
-        let input_info = ffi_bridge
-            .get_all_input_info()
+    pub fn from_algorithm_bridge(algorithm_bridge: &ffi::AlgorithmBridge) -> Self {
+        let input_info = algorithm_bridge
+            .get_input_infos()
             .into_iter()
             .map(|info| {
-                let info: InputOutputDefinition = info.into();
+                let info: InputOutputInfo = info.into();
                 (info.name.clone(), info)
             })
             .collect();
 
-        let output_info = ffi_bridge
-            .get_all_output_info()
+        let output_info = algorithm_bridge
+            .get_output_infos()
             .into_iter()
             .map(|info| {
-                let info: InputOutputDefinition = info.into();
+                let info: InputOutputInfo = info.into();
                 (info.name.clone(), info)
             })
             .collect();
 
-        let parameter_info = ffi_bridge
-            .get_all_parameter_info()
+        let parameter_info = algorithm_bridge
+            .get_parameter_infos()
             .into_iter()
             .map(|info| {
-                let info: ParameterDefinition = info.into();
+                let info: ParameterInfo = info.into();
                 (info.name.clone(), info)
             })
             .collect();
 
         Self {
-            name: ffi_bridge.get_algorithm_name(),
-            category: ffi_bridge.get_algorithm_category(),
-            description: ffi_bridge.get_algorithm_description(),
-            input_definitions: input_info,
-            output_definitions: output_info,
-            parameter_definitions: parameter_info,
+            name: algorithm_bridge.get_name(),
+            category: algorithm_bridge.get_category(),
+            description: algorithm_bridge.get_description(),
+            input_infos: input_info,
+            output_infos: output_info,
+            parameter_infos: parameter_info,
         }
     }
 
@@ -60,183 +60,62 @@ impl AlgorithmIntrospection {
     pub fn description(&self) -> &str {
         &self.description
     }
-    pub fn inputs(&self) -> impl Iterator<Item = &InputOutputDefinition> {
-        self.input_definitions.values()
+    pub fn inputs(&self) -> impl Iterator<Item = &InputOutputInfo> {
+        self.input_infos.values()
     }
-    pub fn outputs(&self) -> impl Iterator<Item = &InputOutputDefinition> {
-        self.output_definitions.values()
+    pub fn outputs(&self) -> impl Iterator<Item = &InputOutputInfo> {
+        self.output_infos.values()
     }
-    pub fn parameters(&self) -> impl Iterator<Item = &ParameterDefinition> {
-        self.parameter_definitions.values()
+    pub fn parameters(&self) -> impl Iterator<Item = &ParameterInfo> {
+        self.parameter_infos.values()
     }
 
-    pub fn get_parameter(&self, name: &str) -> Option<&ParameterDefinition> {
-        self.parameter_definitions.get(name)
+    pub fn get_parameter(&self, name: &str) -> Option<&ParameterInfo> {
+        self.parameter_infos.get(name)
     }
-    pub fn get_input(&self, name: &str) -> Option<&InputOutputDefinition> {
-        self.input_definitions.get(name)
+    pub fn get_input(&self, name: &str) -> Option<&InputOutputInfo> {
+        self.input_infos.get(name)
     }
-    pub fn get_output(&self, name: &str) -> Option<&InputOutputDefinition> {
-        self.output_definitions.get(name)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum InputOutputType {
-    Real,
-    Int,
-    UnsignedInt,
-    Long,
-    VectorReal,
-    VectorVectorReal,
-    MatrixReal,
-}
-
-impl fmt::Display for InputOutputType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
+    pub fn get_output(&self, name: &str) -> Option<&InputOutputInfo> {
+        self.output_infos.get(name)
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct InputOutputDefinition {
+pub struct InputOutputInfo {
     name: String,
-    data_type: InputOutputType,
+    input_output_type: InputOutputType,
     description: String,
 }
 
-impl InputOutputDefinition {
+impl InputOutputInfo {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn data_type(&self) -> InputOutputType {
-        self.data_type
+    pub fn input_output_type(&self) -> InputOutputType {
+        self.input_output_type
     }
     pub fn description(&self) -> &str {
         &self.description
     }
 }
 
-impl From<ffi::IOType> for InputOutputType {
-    fn from(value: ffi::IOType) -> Self {
-        match value {
-            ffi::IOType::Real => InputOutputType::Real,
-            ffi::IOType::Int => InputOutputType::Int,
-            ffi::IOType::UnsignedInt => InputOutputType::UnsignedInt,
-            ffi::IOType::Long => InputOutputType::Long,
-            ffi::IOType::VectorReal => InputOutputType::VectorReal,
-            ffi::IOType::VectorVectorReal => InputOutputType::VectorVectorReal,
-            ffi::IOType::MatrixReal => InputOutputType::MatrixReal,
-            _ => panic!("Encountered invalid IO type from C++ side: {:?}", value),
-        }
-    }
-}
+impl From<ffi::InputOutputInfo> for InputOutputInfo {
+    fn from(value: ffi::InputOutputInfo) -> Self {
+        let data_type = DataType::from(value.data_type);
+        let input_output_type =
+            InputOutputType::try_from(data_type).expect("Invalid input/output type");
 
-impl From<InputOutputType> for ffi::IOType {
-    fn from(value: InputOutputType) -> Self {
-        match value {
-            InputOutputType::Real => ffi::IOType::Real,
-            InputOutputType::Int => ffi::IOType::Int,
-            InputOutputType::UnsignedInt => ffi::IOType::UnsignedInt,
-            InputOutputType::Long => ffi::IOType::Long,
-            InputOutputType::VectorReal => ffi::IOType::VectorReal,
-            InputOutputType::VectorVectorReal => ffi::IOType::VectorVectorReal,
-            InputOutputType::MatrixReal => ffi::IOType::MatrixReal,
-        }
-    }
-}
-
-impl From<ffi::IOInfo> for InputOutputDefinition {
-    fn from(value: ffi::IOInfo) -> Self {
-        InputOutputDefinition {
+        InputOutputInfo {
             name: value.name,
-            data_type: value.type_.into(),
+            input_output_type: input_output_type,
             description: value.description,
         }
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum ParameterType {
-    Real,
-    String,
-    Bool,
-    Int,
-    StereoSample,
-    VectorReal,
-    VectorString,
-    VectorBool,
-    VectorInt,
-    VectorStereoSample,
-    VectorVectorReal,
-    VectorVectorString,
-    VectorVectorStereoSample,
-    VectorMatrixReal,
-    MapVectorReal,
-    MapVectorString,
-    MapVectorInt,
-    MapReal,
-    MatrixReal,
-}
-
-impl From<ffi::ParameterType> for ParameterType {
-    fn from(value: ffi::ParameterType) -> Self {
-        match value {
-            ffi::ParameterType::Real => ParameterType::Real,
-            ffi::ParameterType::String => ParameterType::String,
-            ffi::ParameterType::Bool => ParameterType::Bool,
-            ffi::ParameterType::Int => ParameterType::Int,
-            ffi::ParameterType::StereoSample => ParameterType::StereoSample,
-            ffi::ParameterType::VectorReal => ParameterType::VectorReal,
-            ffi::ParameterType::VectorString => ParameterType::VectorString,
-            ffi::ParameterType::VectorBool => ParameterType::VectorBool,
-            ffi::ParameterType::VectorInt => ParameterType::VectorInt,
-            ffi::ParameterType::VectorStereoSample => ParameterType::VectorStereoSample,
-            ffi::ParameterType::VectorVectorReal => ParameterType::VectorVectorReal,
-            ffi::ParameterType::VectorVectorString => ParameterType::VectorVectorString,
-            ffi::ParameterType::VectorVectorStereoSample => ParameterType::VectorVectorStereoSample,
-            ffi::ParameterType::VectorMatrixReal => ParameterType::VectorMatrixReal,
-            ffi::ParameterType::MapVectorReal => ParameterType::MapVectorReal,
-            ffi::ParameterType::MapVectorString => ParameterType::MapVectorString,
-            ffi::ParameterType::MapVectorInt => ParameterType::MapVectorInt,
-            ffi::ParameterType::MapReal => ParameterType::MapReal,
-            ffi::ParameterType::MatrixReal => ParameterType::MatrixReal,
-            _ => panic!(
-                "Encountered invalid parameter type from C++ side: {:?}",
-                value
-            ),
-        }
-    }
-}
-
-impl From<ParameterType> for ffi::ParameterType {
-    fn from(value: ParameterType) -> Self {
-        match value {
-            ParameterType::Real => ffi::ParameterType::Real,
-            ParameterType::String => ffi::ParameterType::String,
-            ParameterType::Bool => ffi::ParameterType::Bool,
-            ParameterType::Int => ffi::ParameterType::Int,
-            ParameterType::StereoSample => ffi::ParameterType::StereoSample,
-            ParameterType::VectorReal => ffi::ParameterType::VectorReal,
-            ParameterType::VectorString => ffi::ParameterType::VectorString,
-            ParameterType::VectorBool => ffi::ParameterType::VectorBool,
-            ParameterType::VectorInt => ffi::ParameterType::VectorInt,
-            ParameterType::VectorStereoSample => ffi::ParameterType::VectorStereoSample,
-            ParameterType::VectorVectorReal => ffi::ParameterType::VectorVectorReal,
-            ParameterType::VectorVectorString => ffi::ParameterType::VectorVectorString,
-            ParameterType::VectorVectorStereoSample => ffi::ParameterType::VectorVectorStereoSample,
-            ParameterType::VectorMatrixReal => ffi::ParameterType::VectorMatrixReal,
-            ParameterType::MapVectorReal => ffi::ParameterType::MapVectorReal,
-            ParameterType::MapVectorString => ffi::ParameterType::MapVectorString,
-            ParameterType::MapVectorInt => ffi::ParameterType::MapVectorInt,
-            ParameterType::MapReal => ffi::ParameterType::MapReal,
-            ParameterType::MatrixReal => ffi::ParameterType::MatrixReal,
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
-pub enum ParameterConstraint {
+pub enum Constraint {
     Any,
     PositiveReal,
     NonNegativeReal,
@@ -247,24 +126,24 @@ pub enum ParameterConstraint {
     Custom(String),
 }
 
-impl From<&str> for ParameterConstraint {
+impl From<&str> for Constraint {
     fn from(s: &str) -> Self {
         if s.is_empty() {
-            return ParameterConstraint::Any;
+            return Constraint::Any;
         }
         match s {
-            "(0,inf)" => ParameterConstraint::PositiveReal,
-            "[0,inf)" => ParameterConstraint::NonNegativeReal,
+            "(0,inf)" => Constraint::PositiveReal,
+            "[0,inf)" => Constraint::NonNegativeReal,
             s if s.starts_with('{') && s.ends_with('}') => Self::parse_one_of_constraint(s),
             s if s.starts_with('[') && s.ends_with(']') => {
                 Self::parse_int_range_constraint(s).unwrap_or_else(|| Self::Custom(s.to_string()))
             }
-            _ => ParameterConstraint::Custom(s.to_string()),
+            _ => Constraint::Custom(s.to_string()),
         }
     }
 }
 
-impl ParameterConstraint {
+impl Constraint {
     fn parse_one_of_constraint(s: &str) -> Self {
         let inner = &s[1..s.len() - 1];
         let values = inner.split(',').map(|v| v.trim().to_string()).collect();
@@ -280,25 +159,25 @@ impl ParameterConstraint {
 }
 
 #[derive(Debug, Clone)]
-pub struct ParameterDefinition {
+pub struct ParameterInfo {
     name: String,
-    data_type: ParameterType,
+    parameter_type: ParameterType,
     description: String,
-    constraint: ParameterConstraint,
+    constraint: Constraint,
     default_value: String,
 }
 
-impl ParameterDefinition {
+impl ParameterInfo {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn type_(&self) -> ParameterType {
-        self.data_type
+    pub fn parameter_type(&self) -> ParameterType {
+        self.parameter_type
     }
     pub fn description(&self) -> &str {
         &self.description
     }
-    pub fn constraint(&self) -> &ParameterConstraint {
+    pub fn constraint(&self) -> &Constraint {
         &self.constraint
     }
     pub fn default_value(&self) -> &str {
@@ -309,13 +188,16 @@ impl ParameterDefinition {
     }
 }
 
-impl From<ffi::ParameterInfo> for ParameterDefinition {
+impl From<ffi::ParameterInfo> for ParameterInfo {
     fn from(value: ffi::ParameterInfo) -> Self {
-        ParameterDefinition {
+        let data_type = DataType::from(value.data_type);
+        let parameter_type = ParameterType::try_from(data_type).expect("Invalid parameter type");
+
+        ParameterInfo {
             name: value.name,
-            data_type: value.type_.into(),
+            parameter_type,
             description: value.description,
-            constraint: value.range.as_str().into(),
+            constraint: value.constraint.as_str().into(),
             default_value: value.default_value,
         }
     }
