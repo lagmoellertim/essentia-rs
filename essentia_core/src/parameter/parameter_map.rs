@@ -1,10 +1,6 @@
 use cxx::UniquePtr;
 
-use crate::{
-    ffi,
-    parameter::Parameter,
-    variant_data::from_other::IntoVariantData,
-};
+use crate::{ffi, parameter::Parameter, variant_data::from_other::IntoVariantData};
 
 pub struct ParameterMap {
     pub(crate) parameter_map_bridge: UniquePtr<ffi::ParameterMapBridge>,
