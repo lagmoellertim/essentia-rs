@@ -18,6 +18,7 @@ impl ParameterMap {
 
         self.parameter_map_bridge
             .pin_mut()
-            .add(key, variant_data.into_owned_ptr());
+            .add(key, variant_data.into_owned_ptr())
+            .unwrap();
     }
 }

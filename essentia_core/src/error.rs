@@ -1,8 +1,12 @@
 use thiserror::Error;
 
-pub use crate::algorithm::error::*;
-use crate::essentia::CreateAlgorithmError;
 pub use crate::variant_data::ConversionError;
+use crate::{
+    algorithm::{
+        ComputationError, ConfigurationError, InputError, OutputError, ParameterError, ResetError,
+    },
+    essentia::CreateAlgorithmError,
+};
 
 #[derive(Debug, Error)]
 pub enum EssentiaError {
