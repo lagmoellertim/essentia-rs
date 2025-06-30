@@ -1,4 +1,5 @@
 #include "parameter_map_bridge.h"
+#include <stdexcept>
 
 namespace essentia_bridge {
 
@@ -23,13 +24,16 @@ void ParameterMapBridge::add(rust::Str key,
     void operator()(float value) { map->add(key, essentia::Parameter(value)); }
     void operator()(int value) { map->add(key, essentia::Parameter(value)); }
     void operator()(unsigned int value) {
-      map->add(key, essentia::Parameter(static_cast<int>(value)));
+      throw std::runtime_error("Unsigned Int is not supported as parameter");
     }
     void operator()(std::int64_t value) {
-      map->add(key, essentia::Parameter(static_cast<int>(value)));
+      throw std::runtime_error("Long is not supported as parameter");
     }
     void operator()(const essentia::StereoSample &value) {
       map->add(key, essentia::Parameter(value));
+    }
+    void operator()(const std::complex<essentia::Real> &value) {
+      throw std::runtime_error("Complex types are not supported as parameters");
     }
     void operator()(const std::vector<bool> &value) {
       map->add(key, essentia::Parameter(value));
@@ -46,6 +50,9 @@ void ParameterMapBridge::add(rust::Str key,
     void operator()(const std::vector<essentia::StereoSample> &value) {
       map->add(key, essentia::Parameter(value));
     }
+    void operator()(const std::vector<std::complex<essentia::Real>> &value) {
+      throw std::runtime_error("Complex types are not supported as parameters");
+    }
     void operator()(const std::vector<std::vector<float>> &value) {
       map->add(key, essentia::Parameter(value));
     }
@@ -55,6 +62,10 @@ void ParameterMapBridge::add(rust::Str key,
     void
     operator()(const std::vector<std::vector<essentia::StereoSample>> &value) {
       map->add(key, essentia::Parameter(value));
+    }
+    void operator()(
+        const std::vector<std::vector<std::complex<essentia::Real>>> &value) {
+      throw std::runtime_error("Complex types are not supported as parameters");
     }
     void operator()(const std::vector<TNT::Array2D<float>> &value) {
       map->add(key, essentia::Parameter(value));
@@ -72,8 +83,19 @@ void ParameterMapBridge::add(rust::Str key,
     void operator()(const std::map<std::string, std::vector<int>> &value) {
       map->add(key, essentia::Parameter(value));
     }
+    void operator()(
+        const std::map<std::string, std::vector<std::complex<essentia::Real>>>
+            &value) {
+      throw std::runtime_error("Complex types are not supported as parameters");
+    }
     void operator()(const std::map<std::string, float> &value) {
       map->add(key, essentia::Parameter(value));
+    }
+    void operator()(const essentia::Pool &value) {
+      throw std::runtime_error("Pool is not supported in ParameterMap");
+    }
+    void operator()(const essentia::Tensor<essentia::Real> &value) {
+      throw std::runtime_error("Tensor types are not supported as parameters");
     }
   };
 

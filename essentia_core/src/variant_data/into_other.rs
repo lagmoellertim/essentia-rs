@@ -1,8 +1,9 @@
-use ndarray::Array2;
+use ndarray::{Array2, Array4};
 use std::collections::HashMap;
 
 use crate::{
     ffi,
+    pool::Pool,
     variant_data::{ConversionError, VariantData, variant},
 };
 
@@ -56,6 +57,27 @@ impl<'a> GetVariantData<ffi::StereoSample> for VariantData<'a, variant::StereoSa
     }
 }
 
+impl<'a> GetVariantData<num::Complex<f32>> for VariantData<'a, variant::Complex> {
+    fn get(&self) -> num::Complex<f32> {
+        self.data.as_ref().get_complex().unwrap().into()
+    }
+}
+
+impl<'a> GetVariantData<Array4<f32>> for VariantData<'a, variant::TensorFloat> {
+    fn get(&self) -> Array4<f32> {
+        let tensor = self.data.as_ref().get_tensor_float().unwrap();
+
+        let shape = (
+            tensor.shape[0],
+            tensor.shape[1],
+            tensor.shape[2],
+            tensor.shape[3],
+        );
+
+        Array4::from_shape_vec(shape, tensor.slice.to_vec()).unwrap() // Safe because C++ guarantees correct dimensions
+    }
+}
+
 impl<'a> GetVariantData<Vec<bool>> for VariantData<'a, variant::VectorBool> {
     fn get(&self) -> Vec<bool> {
         self.data.as_ref().get_vector_bool().unwrap()
@@ -87,6 +109,18 @@ impl<'a> GetVariantData<Vec<ffi::StereoSample>> for VariantData<'a, variant::Vec
             .get_vector_stereo_sample()
             .unwrap()
             .to_vec()
+    }
+}
+
+impl<'a> GetVariantData<Vec<num::Complex<f32>>> for VariantData<'a, variant::VectorComplex> {
+    fn get(&self) -> Vec<num::Complex<f32>> {
+        self.data
+            .as_ref()
+            .get_vector_complex()
+            .unwrap()
+            .iter()
+            .map(|c| c.into())
+            .collect()
     }
 }
 
@@ -192,6 +226,20 @@ impl<'a> GetVariantData<Vec<Vec<ffi::StereoSample>>>
     }
 }
 
+impl<'a> GetVariantData<Vec<Vec<num::Complex<f32>>>>
+    for VariantData<'a, variant::VectorVectorComplex>
+{
+    fn get(&self) -> Vec<Vec<num::Complex<f32>>> {
+        self.data
+            .as_ref()
+            .get_vector_vector_complex()
+            .unwrap()
+            .into_iter()
+            .map(|vec_complex| vec_complex.vec.into_iter().map(|c| c.into()).collect())
+            .collect()
+    }
+}
+
 impl<'a> GetVariantData<HashMap<String, f32>> for VariantData<'a, variant::MapFloat> {
     fn get(&self) -> HashMap<String, f32> {
         self.data
@@ -239,5 +287,33 @@ impl<'a> GetVariantData<HashMap<String, Vec<i32>>> for VariantData<'a, variant::
             .into_iter()
             .map(|entry| (entry.key.to_string(), entry.value.to_vec()))
             .collect()
+    }
+}
+
+impl<'a> GetVariantData<HashMap<String, Vec<num::Complex<f32>>>>
+    for VariantData<'a, variant::MapVectorComplex>
+{
+    fn get(&self) -> HashMap<String, Vec<num::Complex<f32>>> {
+        self.data
+            .as_ref()
+            .get_map_vector_complex()
+            .unwrap()
+            .into_iter()
+            .map(|entry| {
+                (
+                    entry.key.to_string(),
+                    entry.value.iter().map(|c| c.into()).collect(),
+                )
+            })
+            .collect()
+    }
+}
+
+// TODO Maybe the Pool should be take a reference to the PoolBridge?
+impl<'a> GetVariantData<Pool> for VariantData<'a, variant::Pool> {
+    fn get(&self) -> Pool {
+        let pool_bridge_ref = self.data.as_ref().get_pool();
+        let cloned_bridge = pool_bridge_ref.clone();
+        Pool::new_from_bridge(cloned_bridge)
     }
 }

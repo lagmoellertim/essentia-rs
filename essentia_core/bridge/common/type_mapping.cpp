@@ -1,11 +1,14 @@
 #include "type_mapping.h"
-#include "essentia_core/src/ffi.rs.h"
+#include "essentia-core/src/ffi.rs.h"
+#include <complex>
+#include <essentia/pool.h>
 #include <essentia/types.h>
 #include <essentia/utils/tnt/tnt_array2d.h>
 #include <map>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
+#include <unsupported/Eigen/CXX11/Tensor>
 #include <vector>
 
 namespace essentia_bridge {
@@ -19,17 +22,23 @@ const std::unordered_map<std::type_index, DataType> &get_type_mapping() {
       {typeid(unsigned int), DataType::UnsignedInt},
       {typeid(long), DataType::Long},
       {typeid(essentia::StereoSample), DataType::StereoSample},
+      {typeid(std::complex<essentia::Real>), DataType::Complex},
+      {typeid(essentia::Tensor<essentia::Real>), DataType::TensorFloat},
       {typeid(std::vector<bool>), DataType::VectorBool},
       {typeid(std::vector<int>), DataType::VectorInt},
       {typeid(std::vector<std::string>), DataType::VectorString},
       {typeid(std::vector<float>), DataType::VectorFloat},
       {typeid(std::vector<essentia::StereoSample>),
        DataType::VectorStereoSample},
+      {typeid(std::vector<std::complex<essentia::Real>>),
+       DataType::VectorComplex},
       {typeid(std::vector<std::vector<float>>), DataType::VectorVectorFloat},
       {typeid(std::vector<std::vector<std::string>>),
        DataType::VectorVectorString},
       {typeid(std::vector<std::vector<essentia::StereoSample>>),
        DataType::VectorVectorStereoSample},
+      {typeid(std::vector<std::vector<std::complex<essentia::Real>>>),
+       DataType::VectorVectorComplex},
       {typeid(std::vector<TNT::Array2D<float>>), DataType::VectorMatrixFloat},
       {typeid(TNT::Array2D<float>), DataType::MatrixFloat},
       {typeid(std::map<std::string, std::vector<float>>),
@@ -37,7 +46,10 @@ const std::unordered_map<std::type_index, DataType> &get_type_mapping() {
       {typeid(std::map<std::string, std::vector<std::string>>),
        DataType::MapVectorString},
       {typeid(std::map<std::string, std::vector<int>>), DataType::MapVectorInt},
-      {typeid(std::map<std::string, float>), DataType::MapFloat}};
+      {typeid(std::map<std::string, std::vector<std::complex<essentia::Real>>>),
+       DataType::MapVectorComplex},
+      {typeid(std::map<std::string, float>), DataType::MapFloat},
+      {typeid(essentia::Pool), DataType::Pool}};
   return type_map;
 }
 

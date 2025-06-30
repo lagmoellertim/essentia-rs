@@ -5,6 +5,7 @@ fn main() {
         .file("bridge/algorithm_bridge/input_output.cpp")
         .file("bridge/algorithm_bridge/introspection.cpp")
         .file("bridge/parameter_map_bridge/parameter_map_bridge.cpp")
+        .file("bridge/pool_bridge/pool_bridge.cpp")
         .file("bridge/variant_data/accessors.cpp")
         .file("bridge/variant_data/constructors.cpp")
         .file("bridge/variant_data/introspection.cpp")

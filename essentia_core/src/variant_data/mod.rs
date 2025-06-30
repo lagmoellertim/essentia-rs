@@ -10,6 +10,9 @@ pub mod from_other;
 pub mod into_other;
 pub mod variants;
 
+#[cfg(test)]
+mod tests;
+
 pub use data_type::DataType;
 pub use from_other::{IntoVariantData, TryIntoVariantData};
 pub use variants::*;
@@ -170,10 +173,15 @@ fn copy_to_owned(data: &ffi::VariantData) -> UniquePtr<ffi::VariantData> {
             let value = data.get_map_float().unwrap();
             ffi::create_variant_data_from_map_float(value)
         }
-        unsupported => {
+        ffi::DataType::Pool => {
+            let pool_bridge_ref = data.get_pool();
+            let cloned_pool = pool_bridge_ref.clone();
+            ffi::create_variant_data_from_pool(cloned_pool)
+        }
+        data_type => {
             panic!(
                 "Unsupported data type: {:?}. This indicates a bug - the Rust code is out of sync with the C++ data types.",
-                unsupported
+                data_type
             )
         }
     }

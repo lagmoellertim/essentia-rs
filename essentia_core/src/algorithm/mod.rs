@@ -29,6 +29,12 @@ pub struct Algorithm<'a, State> {
     _marker: PhantomData<&'a Essentia>,
 }
 
+impl<'a, State> Algorithm<'a, State> {
+    pub fn introspection(&self) -> &AlgorithmIntrospection {
+        &self.introspection
+    }
+}
+
 impl<'a> Algorithm<'a, Initialized> {
     pub(crate) fn new(algorithm_bridge: UniquePtr<ffi::AlgorithmBridge>) -> Self {
         let introspection = AlgorithmIntrospection::from_algorithm_bridge(&algorithm_bridge);
@@ -43,20 +49,20 @@ impl<'a> Algorithm<'a, Initialized> {
         }
     }
 
-    pub fn parameter<T, V>(mut self, key: &str, value: V) -> Result<Self, ParameterError>
-    where
-        V: TryIntoVariantData<T>,
-        T: Parameter,
-    {
+    pub fn parameter<T: Parameter>(
+        mut self,
+        key: &str,
+        value: impl TryIntoVariantData<T>,
+    ) -> Result<Self, ParameterError> {
         self.set_parameter(key, value)?;
         Ok(self)
     }
 
-    pub fn set_parameter<T, V>(&mut self, key: &str, value: V) -> Result<(), ParameterError>
-    where
-        V: TryIntoVariantData<T>,
-        T: Parameter,
-    {
+    pub fn set_parameter<T: Parameter>(
+        &mut self,
+        key: &str,
+        value: impl TryIntoVariantData<T>,
+    ) -> Result<(), ParameterError> {
         let param_info = self.introspection.get_parameter(key).ok_or_else(|| {
             ParameterError::ParameterNotFound {
                 parameter: key.to_string(),
@@ -99,20 +105,20 @@ impl<'a> Algorithm<'a, Initialized> {
 }
 
 impl<'a> Algorithm<'a, Configured> {
-    pub fn input<T, V>(mut self, key: &str, value: V) -> Result<Self, InputError>
-    where
-        V: TryIntoVariantData<T>,
-        T: InputOutput,
-    {
+    pub fn input<T: InputOutput>(
+        mut self,
+        key: &str,
+        value: impl TryIntoVariantData<T>,
+    ) -> Result<Self, InputError> {
         self.set_input(key, value)?;
         Ok(self)
     }
 
-    pub fn set_input<T, V>(&mut self, key: &str, value: V) -> Result<(), InputError>
-    where
-        V: TryIntoVariantData<T>,
-        T: InputOutput,
-    {
+    pub fn set_input<T: InputOutput>(
+        &mut self,
+        key: &str,
+        value: impl TryIntoVariantData<T>,
+    ) -> Result<(), InputError> {
         let input_info =
             self.introspection
                 .get_input(key)

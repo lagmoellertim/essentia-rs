@@ -1,5 +1,5 @@
 #include "algorithm_bridge.h"
-#include "essentia_core/src/ffi.rs.h"
+#include "essentia-core/src/ffi.rs.h"
 #include <stdexcept>
 
 namespace essentia_bridge {

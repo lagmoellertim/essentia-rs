@@ -48,9 +48,7 @@ impl TryFrom<DataType> for ParameterType {
             DataType::MapVectorInt => Ok(ParameterType::MapVectorInt),
             DataType::MapFloat => Ok(ParameterType::MapFloat),
             DataType::MatrixFloat => Ok(ParameterType::MatrixFloat),
-            // These types are not valid for parameters
-            DataType::UnsignedInt => Err(format!("UnsignedInt is not a valid parameter type")),
-            DataType::Long => Err(format!("Long is not a valid parameter type")),
+            _ => Err(format!("Invalid parameter type")), // TODO Better Error Message
         }
     }
 }

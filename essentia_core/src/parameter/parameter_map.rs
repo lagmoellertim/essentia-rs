@@ -13,7 +13,7 @@ impl ParameterMap {
         }
     }
 
-    pub fn set_parameter<V: IntoVariantData<T>, T: Parameter>(&mut self, key: &str, value: V) {
+    pub fn set_parameter<T: Parameter>(&mut self, key: &str, value: impl IntoVariantData<T>) {
         let variant_data = value.into_variant_data();
 
         self.parameter_map_bridge

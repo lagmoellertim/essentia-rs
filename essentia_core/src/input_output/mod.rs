@@ -49,6 +49,12 @@ impl InputOutput for variant::StereoSample {
     }
 }
 
+impl InputOutput for variant::Complex {
+    fn input_output_type() -> InputOutputType {
+        InputOutputType::Complex
+    }
+}
+
 impl InputOutput for variant::VectorFloat {
     fn input_output_type() -> InputOutputType {
         InputOutputType::VectorFloat
@@ -76,6 +82,12 @@ impl InputOutput for variant::VectorInt {
 impl InputOutput for variant::VectorStereoSample {
     fn input_output_type() -> InputOutputType {
         InputOutputType::VectorStereoSample
+    }
+}
+
+impl InputOutput for variant::VectorComplex {
+    fn input_output_type() -> InputOutputType {
+        InputOutputType::VectorComplex
     }
 }
 
@@ -121,6 +133,12 @@ impl InputOutput for variant::MapVectorInt {
     }
 }
 
+impl InputOutput for variant::MapVectorComplex {
+    fn input_output_type() -> InputOutputType {
+        InputOutputType::MapVectorComplex
+    }
+}
+
 impl InputOutput for variant::MapFloat {
     fn input_output_type() -> InputOutputType {
         InputOutputType::MapFloat
@@ -130,5 +148,23 @@ impl InputOutput for variant::MapFloat {
 impl InputOutput for variant::MatrixFloat {
     fn input_output_type() -> InputOutputType {
         InputOutputType::MatrixFloat
+    }
+}
+
+impl InputOutput for variant::VectorVectorComplex {
+    fn input_output_type() -> InputOutputType {
+        InputOutputType::VectorVectorComplex
+    }
+}
+
+impl InputOutput for variant::Pool {
+    fn input_output_type() -> InputOutputType {
+        InputOutputType::Pool
+    }
+}
+
+impl InputOutput for variant::TensorFloat {
+    fn input_output_type() -> InputOutputType {
+        InputOutputType::TensorFloat
     }
 }

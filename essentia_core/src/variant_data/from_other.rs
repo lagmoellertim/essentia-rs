@@ -1,4 +1,4 @@
-use ndarray::Array2;
+use ndarray::{Array2, Array4};
 use std::collections::HashMap;
 
 use crate::{
@@ -72,6 +72,31 @@ impl IntoVariantData<variant::StereoSample> for ffi::StereoSample {
     }
 }
 
+impl IntoVariantData<variant::Complex> for num::Complex<f32> {
+    fn into_variant_data(self) -> VariantData<'static, variant::Complex> {
+        VariantData::new_owned(ffi::create_variant_data_from_complex(self.into()))
+    }
+}
+
+impl<'a> IntoVariantData<variant::TensorFloat> for &'a Array4<f32> {
+    fn into_variant_data(self) -> VariantData<'static, variant::TensorFloat> {
+        let slice = self.as_slice().expect("Array must be contiguous");
+        let shape = [
+            self.shape()[0],
+            self.shape()[1],
+            self.shape()[2],
+            self.shape()[3],
+        ];
+
+        VariantData::new_owned(ffi::create_variant_data_from_tensor_float(
+            ffi::TensorFloat {
+                slice,
+                shape: &shape,
+            },
+        ))
+    }
+}
+
 impl<'a> IntoVariantData<variant::VectorBool> for &'a [bool] {
     fn into_variant_data(self) -> VariantData<'static, variant::VectorBool> {
         VariantData::new_owned(ffi::create_variant_data_from_vector_bool(self))
@@ -99,6 +124,13 @@ impl<'a> IntoVariantData<variant::VectorFloat> for &'a [f32] {
 impl<'a> IntoVariantData<variant::VectorStereoSample> for &'a [ffi::StereoSample] {
     fn into_variant_data(self) -> VariantData<'static, variant::VectorStereoSample> {
         VariantData::new_owned(ffi::create_variant_data_from_vector_stereo_sample(self))
+    }
+}
+
+impl<'a> IntoVariantData<variant::VectorComplex> for &'a [num::Complex<f32>] {
+    fn into_variant_data(self) -> VariantData<'static, variant::VectorComplex> {
+        let ffi_vec: Vec<ffi::Complex> = self.iter().map(|c| c.into()).collect();
+        VariantData::new_owned(ffi::create_variant_data_from_vector_complex(&ffi_vec))
     }
 }
 
@@ -142,6 +174,18 @@ impl<'a> IntoVariantData<variant::VectorVectorStereoSample> for &'a [&[ffi::Ster
         VariantData::new_owned(ffi::create_variant_data_from_vector_vector_stereo_sample(
             self.iter()
                 .map(|item| ffi::SliceStereoSample { slice: *item })
+                .collect(),
+        ))
+    }
+}
+
+impl<'a> IntoVariantData<variant::VectorVectorComplex> for &'a [Vec<num::Complex<f32>>] {
+    fn into_variant_data(self) -> VariantData<'static, variant::VectorVectorComplex> {
+        VariantData::new_owned(ffi::create_variant_data_from_vector_vector_complex(
+            self.iter()
+                .map(|item| ffi::VecComplex {
+                    vec: item.iter().map(|c| c.into()).collect(),
+                })
                 .collect(),
         ))
     }
@@ -200,6 +244,28 @@ impl<'a> IntoVariantData<variant::MapVectorInt> for &'a HashMap<String, Vec<i32>
     }
 }
 
+impl<'a> IntoVariantData<variant::MapVectorComplex>
+    for &'a HashMap<String, Vec<num::Complex<f32>>>
+{
+    fn into_variant_data(self) -> VariantData<'static, variant::MapVectorComplex> {
+        // Convert all data first to avoid lifetime issues
+        let converted_data: Vec<(String, Vec<ffi::Complex>)> = self
+            .iter()
+            .map(|(key, vec)| (key.clone(), vec.iter().map(|c| c.into()).collect()))
+            .collect();
+
+        let entries: Vec<ffi::MapEntryVectorComplex> = converted_data
+            .iter()
+            .map(|(key, ffi_vec)| ffi::MapEntryVectorComplex {
+                key: key.clone(),
+                value: ffi_vec.as_slice(),
+            })
+            .collect();
+
+        VariantData::new_owned(ffi::create_variant_data_from_map_vector_complex(entries))
+    }
+}
+
 impl<'a> IntoVariantData<variant::MapFloat> for &'a HashMap<String, f32> {
     fn into_variant_data(self) -> VariantData<'static, variant::MapFloat> {
         VariantData::new_owned(ffi::create_variant_data_from_map_float(
@@ -251,5 +317,11 @@ impl<'a> TryIntoVariantData<variant::MatrixFloat> for &'a [Vec<f32>] {
                 dim2,
             }),
         ))
+    }
+}
+
+impl IntoVariantData<variant::Pool> for crate::pool::Pool {
+    fn into_variant_data(self) -> VariantData<'static, variant::Pool> {
+        VariantData::new_owned(ffi::create_variant_data_from_pool(self.into_owned_ptr()))
     }
 }

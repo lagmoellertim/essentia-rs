@@ -1,11 +1,34 @@
-#include "essentia_core/src/ffi.rs.h"
+#include "../pool_bridge/pool_bridge.h"
+#include "essentia-core/src/ffi.rs.h"
 #include "variant_data.h"
+#include <complex>
 #include <cstring>
+#include <essentia/pool.h>
+#include <essentia/utils/tnt/tnt_array2d.h>
 #include <map>
 #include <rust/cxx.h>
 #include <string>
+#include <unsupported/Eigen/CXX11/Tensor>
+#include <vector>
 
 namespace essentia_bridge {
+
+VariantData::VariantData() = default;
+VariantData::~VariantData() = default;
+
+VariantData::VariantData(const VariantData &other) : data(other.data) {}
+
+VariantData &VariantData::operator=(const VariantData &other) {
+  if (this != &other) {
+    data = other.data;
+    pool_bridge_cache.reset();
+  }
+  return *this;
+}
+
+VariantData::VariantData(VariantData &&other) noexcept = default;
+
+VariantData &VariantData::operator=(VariantData &&other) noexcept = default;
 
 bool VariantData::get_bool() const { return std::get<bool>(data); }
 
@@ -28,6 +51,12 @@ std::int64_t VariantData::get_long() const {
 StereoSample VariantData::get_stereo_sample() const {
   const essentia::StereoSample &sample = std::get<essentia::StereoSample>(data);
   return StereoSample{sample.first, sample.second};
+}
+
+Complex VariantData::get_complex() const {
+  const std::complex<essentia::Real> &complex_val =
+      std::get<std::complex<essentia::Real>>(data);
+  return Complex{complex_val.real(), complex_val.imag()};
 }
 
 rust::Vec<bool> VariantData::get_vector_bool() const {
@@ -77,6 +106,20 @@ rust::Slice<const StereoSample> VariantData::get_vector_stereo_sample() const {
       reinterpret_cast<const StereoSample *>(vec.data()), vec.size());
 }
 
+rust::Slice<const Complex> VariantData::get_vector_complex() const {
+  const auto &vec = std::get<std::vector<std::complex<essentia::Real>>>(data);
+
+  static_assert(sizeof(Complex) == sizeof(std::complex<essentia::Real>),
+                "Complex sizes must match for direct casting");
+  static_assert(std::is_trivially_copyable_v<Complex>,
+                "Complex must be trivially copyable");
+  static_assert(std::is_trivially_copyable_v<std::complex<essentia::Real>>,
+                "std::complex<essentia::Real> must be trivially copyable");
+
+  return rust::Slice<const Complex>(
+      reinterpret_cast<const Complex *>(vec.data()), vec.size());
+}
+
 rust::Vec<SliceFloat> VariantData::get_vector_vector_float() const {
   const auto &vec = std::get<std::vector<std::vector<float>>>(data);
 
@@ -105,6 +148,25 @@ MatrixFloat VariantData::get_matrix_float() const {
   rust_matrix.slice = rust::Slice<const float>(&matrix[0][0], dim1 * dim2);
 
   return rust_matrix;
+}
+
+TensorFloat VariantData::get_tensor_float() const {
+  const auto &tensor = std::get<essentia::Tensor<essentia::Real>>(data);
+
+  TensorFloat rust_tensor;
+
+  static std::vector<size_t> shape_vec = {
+      static_cast<size_t>(tensor.dimension(0)),
+      static_cast<size_t>(tensor.dimension(1)),
+      static_cast<size_t>(tensor.dimension(2)),
+      static_cast<size_t>(tensor.dimension(3))};
+
+  rust_tensor.shape =
+      rust::Slice<const size_t>(shape_vec.data(), shape_vec.size());
+
+  rust_tensor.slice = rust::Slice<const float>(tensor.data(), tensor.size());
+
+  return rust_tensor;
 }
 
 rust::Vec<VecString> VariantData::get_vector_vector_string() const {
@@ -227,17 +289,70 @@ rust::Vec<MapEntryVectorInt> VariantData::get_map_vector_int() const {
   return rust_vec;
 }
 
-rust::Vec<MapEntryFloat> VariantData::get_map_float() const {
-  const auto &map = std::get<std::map<std::string, float>>(data);
+rust::Vec<MapEntryVectorComplex> VariantData::get_map_vector_complex() const {
+  const auto &map = std::get<
+      std::map<std::string, std::vector<std::complex<essentia::Real>>>>(data);
 
-  rust::Vec<MapEntryFloat> rust_vec;
+  rust::Vec<MapEntryVectorComplex> rust_vec;
   rust_vec.reserve(map.size());
 
   for (const auto &[key, value] : map) {
-    MapEntryFloat entry;
+    MapEntryVectorComplex entry;
     entry.key = rust::String(key);
-    entry.value = value;
+
+    static_assert(sizeof(Complex) == sizeof(std::complex<essentia::Real>),
+                  "Complex sizes must match for direct casting");
+    static_assert(std::is_trivially_copyable_v<Complex>,
+                  "Complex must be trivially copyable");
+    static_assert(std::is_trivially_copyable_v<std::complex<essentia::Real>>,
+                  "std::complex<essentia::Real> must be trivially copyable");
+
+    entry.value = rust::Slice<const Complex>(
+        reinterpret_cast<const Complex *>(value.data()), value.size());
     rust_vec.push_back(entry);
+  }
+
+  return rust_vec;
+}
+
+rust::Vec<MapEntryFloat> VariantData::get_map_float() const {
+  const std::map<std::string, float> &map_data =
+      std::get<std::map<std::string, float>>(data);
+  rust::Vec<MapEntryFloat> result;
+  result.reserve(map_data.size());
+
+  for (const auto &entry : map_data) {
+    result.push_back(MapEntryFloat{entry.first, entry.second});
+  }
+
+  return result;
+}
+
+const PoolBridge &VariantData::get_pool() const {
+  if (!pool_bridge_cache) {
+    const auto &pool = std::get<essentia::Pool>(data);
+    pool_bridge_cache =
+        std::make_unique<PoolBridge>(const_cast<essentia::Pool &>(pool));
+  }
+  return *pool_bridge_cache;
+}
+
+rust::Vec<VecComplex> VariantData::get_vector_vector_complex() const {
+  const auto &vec =
+      std::get<std::vector<std::vector<std::complex<essentia::Real>>>>(data);
+
+  rust::Vec<VecComplex> rust_vec;
+  rust_vec.reserve(vec.size());
+
+  for (const auto &complex_vec : vec) {
+    VecComplex vec_complex;
+    vec_complex.vec = rust::Vec<Complex>();
+    vec_complex.vec.reserve(complex_vec.size());
+    for (const auto &complex_val : complex_vec) {
+      vec_complex.vec.push_back(
+          Complex{complex_val.real(), complex_val.imag()});
+    }
+    rust_vec.push_back(vec_complex);
   }
 
   return rust_vec;

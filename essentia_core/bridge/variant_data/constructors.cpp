@@ -1,10 +1,18 @@
-#include "essentia_core/src/ffi.rs.h"
+#include "../pool_bridge/pool_bridge.h"
+#include "essentia-core/src/ffi.rs.h"
 #include "variant_data.h"
+#include <cassert>
+#include <complex>
 #include <cstring>
+#include <essentia/types.h>
+#include <essentia/utils/tnt/tnt_array2d.h>
 #include <map>
 #include <memory>
 #include <rust/cxx.h>
+#include <stdexcept>
 #include <string>
+#include <unsupported/Eigen/CXX11/Tensor>
+#include <vector>
 
 namespace essentia_bridge {
 
@@ -113,6 +121,38 @@ create_variant_data_from_matrix_float(MatrixFloat value) {
 }
 
 std::unique_ptr<VariantData>
+create_variant_data_from_tensor_float(TensorFloat value) {
+  // Essentia requires all tensors to be exactly 4D (TENSORRANK = 4)
+  if (value.shape.size() != 4) {
+    throw std::invalid_argument("Tensor must be exactly 4-dimensional. Got " +
+                                std::to_string(value.shape.size()) +
+                                " dimensions. ");
+  }
+
+  essentia::Tensor<essentia::Real> tensor(
+      static_cast<long>(value.shape[0]), static_cast<long>(value.shape[1]),
+      static_cast<long>(value.shape[2]), static_cast<long>(value.shape[3]));
+
+  size_t total_size = 1;
+  for (size_t dim : value.shape) {
+    total_size *= dim;
+  }
+
+  if (value.slice.size() != total_size) {
+    throw std::invalid_argument(
+        "Tensor data size (" + std::to_string(value.slice.size()) +
+        ") doesn't match expected size (" + std::to_string(total_size) + ")");
+  }
+  static_assert(sizeof(essentia::Real) == sizeof(float),
+                "essentia::Real and float sizes must match for memcpy");
+
+  std::memcpy(tensor.data(), value.slice.data(),
+              value.slice.size() * sizeof(float));
+
+  return std::make_unique<VariantData>(std::move(tensor));
+}
+
+std::unique_ptr<VariantData>
 create_variant_data_from_vector_vector_string(rust::Vec<VecString> value) {
   std::vector<std::vector<std::string>> cpp_vec;
   cpp_vec.reserve(value.size());
@@ -218,16 +258,99 @@ create_variant_data_from_map_vector_int(rust::Vec<MapEntryVectorInt> value) {
   return std::make_unique<VariantData>(std::move(cpp_map));
 }
 
+std::unique_ptr<VariantData> create_variant_data_from_map_vector_complex(
+    rust::Vec<MapEntryVectorComplex> value) {
+  std::map<std::string, std::vector<std::complex<essentia::Real>>> cpp_map;
+
+  static_assert(sizeof(Complex) == sizeof(std::complex<essentia::Real>),
+                "Complex sizes must match for memcpy");
+  static_assert(std::is_trivially_copyable_v<Complex>,
+                "Complex must be trivially copyable");
+  static_assert(std::is_trivially_copyable_v<std::complex<essentia::Real>>,
+                "std::complex<essentia::Real> must be trivially copyable");
+
+  for (const auto &entry : value) {
+    std::string key(entry.key);
+    std::vector<std::complex<essentia::Real>> values;
+    values.resize(entry.value.size());
+
+    if (!entry.value.empty()) {
+      std::memcpy(values.data(), entry.value.data(),
+                  entry.value.size() * sizeof(Complex));
+    }
+
+    cpp_map[key] = std::move(values);
+  }
+
+  return std::make_unique<VariantData>(std::move(cpp_map));
+}
+
 std::unique_ptr<VariantData>
 create_variant_data_from_map_float(rust::Vec<MapEntryFloat> value) {
   std::map<std::string, float> cpp_map;
 
   for (const auto &entry : value) {
-    std::string key(entry.key);
-    cpp_map[key] = entry.value;
+    cpp_map[std::string(entry.key)] = entry.value;
   }
 
   return std::make_unique<VariantData>(std::move(cpp_map));
+}
+
+std::unique_ptr<VariantData> create_variant_data_from_complex(Complex value) {
+  std::complex<essentia::Real> complex_val(value.real, value.imag);
+  return std::make_unique<VariantData>(complex_val);
+}
+
+std::unique_ptr<VariantData>
+create_variant_data_from_vector_complex(rust::Slice<const Complex> value) {
+  std::vector<std::complex<essentia::Real>> cpp_vec;
+  cpp_vec.resize(value.size());
+
+  static_assert(sizeof(Complex) == sizeof(std::complex<essentia::Real>),
+                "Complex sizes must match for memcpy");
+  static_assert(std::is_trivially_copyable_v<Complex>,
+                "Complex must be trivially copyable");
+  static_assert(std::is_trivially_copyable_v<std::complex<essentia::Real>>,
+                "std::complex<essentia::Real> must be trivially copyable");
+
+  if (!value.empty()) {
+    std::memcpy(cpp_vec.data(), value.data(), value.size() * sizeof(Complex));
+  }
+
+  return std::make_unique<VariantData>(std::move(cpp_vec));
+}
+
+std::unique_ptr<VariantData>
+create_variant_data_from_vector_vector_complex(rust::Vec<VecComplex> value) {
+  std::vector<std::vector<std::complex<essentia::Real>>> cpp_vec;
+  cpp_vec.reserve(value.size());
+
+  static_assert(sizeof(Complex) == sizeof(std::complex<essentia::Real>),
+                "Complex sizes must match for memcpy");
+  static_assert(std::is_trivially_copyable_v<Complex>,
+                "Complex must be trivially copyable");
+  static_assert(std::is_trivially_copyable_v<std::complex<essentia::Real>>,
+                "std::complex<essentia::Real> must be trivially copyable");
+
+  for (const auto &vec_complex : value) {
+    std::vector<std::complex<essentia::Real>> inner_vec;
+    inner_vec.resize(vec_complex.vec.size());
+
+    if (!vec_complex.vec.empty()) {
+      std::memcpy(inner_vec.data(), vec_complex.vec.data(),
+                  vec_complex.vec.size() * sizeof(Complex));
+    }
+
+    cpp_vec.push_back(std::move(inner_vec));
+  }
+
+  return std::make_unique<VariantData>(std::move(cpp_vec));
+}
+
+std::unique_ptr<VariantData>
+create_variant_data_from_pool(std::unique_ptr<PoolBridge> pool_bridge) {
+  essentia::Pool pool = pool_bridge->into_pool();
+  return std::make_unique<VariantData>(std::move(pool));
 }
 
 } // namespace essentia_bridge

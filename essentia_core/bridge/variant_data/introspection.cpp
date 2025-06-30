@@ -1,5 +1,5 @@
 #include "../common/type_mapping.h"
-#include "essentia_core/src/ffi.rs.h"
+#include "essentia-core/src/ffi.rs.h"
 #include "variant_data.h"
 #include <rust/cxx.h>
 #include <stdexcept>
