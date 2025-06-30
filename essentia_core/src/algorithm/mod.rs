@@ -155,14 +155,14 @@ impl<'a> Algorithm<'a, Configured> {
         Ok(())
     }
 
-    pub fn compute(&mut self) -> Result<ComputeResult<'a, '_>, ComputationError> {
+    pub fn compute(&mut self) -> Result<ComputeResult<'a, '_>, ComputeError> {
         for output in self.introspection.outputs() {
             let data_type = DataType::from(output.input_output_type());
 
             self.algorithm_bridge
                 .pin_mut()
                 .setup_output(output.name(), data_type.into())
-                .map_err(|exception| ComputationError::OutputSetup {
+                .map_err(|exception| ComputeError::OutputSetup {
                     output: output.name().to_string(),
                     source: exception,
                 })?;
@@ -171,7 +171,7 @@ impl<'a> Algorithm<'a, Configured> {
         self.algorithm_bridge
             .pin_mut()
             .compute()
-            .map_err(ComputationError::Compute)?;
+            .map_err(ComputeError::Compute)?;
 
         Ok(ComputeResult { algorithm: self })
     }

@@ -58,7 +58,7 @@ pub enum InputError {
 }
 
 #[derive(Debug, Error)]
-pub enum ComputationError {
+pub enum ComputeError {
     #[error("failed to setup output '{output}': {source}")]
     OutputSetup { output: String, source: Exception },
 
@@ -71,7 +71,6 @@ pub enum ResetError {
     #[error("algorithm reset failed: {0}")]
     Internal(#[from] Exception),
 }
-
 #[derive(Debug, Error)]
 pub enum OutputError {
     #[error("no output named '{output}' found")]

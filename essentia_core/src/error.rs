@@ -1,33 +1,28 @@
 use thiserror::Error;
 
-pub use crate::variant_data::ConversionError;
-use crate::{
-    algorithm::{
-        ComputationError, ConfigurationError, InputError, OutputError, ParameterError, ResetError,
-    },
-    essentia::CreateAlgorithmError,
-};
+pub use crate::algorithm::error::*;
+pub use crate::essentia::CreateAlgorithmError;
 
 #[derive(Debug, Error)]
 pub enum EssentiaError {
     #[error("algorithm creation failed: {0}")]
-    AlgorithmCreation(#[from] CreateAlgorithmError),
+    CreateAlgorithm(#[from] CreateAlgorithmError),
 
-    #[error("configuration failed: {0}")]
+    #[error("parameter error: {0}")]
+    Parameter(#[from] ParameterError),
+
+    #[error("configuration error: {0}")]
     Configuration(#[from] ConfigurationError),
 
     #[error("input error: {0}")]
     Input(#[from] InputError),
 
-    #[error("computation failed: {0}")]
-    Computation(#[from] ComputationError),
-
-    #[error("reset failed: {0}")]
-    Reset(#[from] ResetError),
+    #[error("computation error: {0}")]
+    Computation(#[from] ComputeError),
 
     #[error("output error: {0}")]
     Output(#[from] OutputError),
 
-    #[error("parameter error: {0}")]
-    Parameter(#[from] ParameterError),
+    #[error("reset error: {0}")]
+    Reset(#[from] ResetError),
 }

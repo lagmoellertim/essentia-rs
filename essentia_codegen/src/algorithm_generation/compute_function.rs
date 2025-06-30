@@ -39,14 +39,17 @@ pub fn generate_compute_function(
         let variant = data_type_to_variant(&input.input_output_type().into());
 
         p.push(quote! { #ident: impl TryIntoVariantData<#variant> });
-        set_statements.push(quote! { self.algorithm.set_input(#input_name, #ident)?; });
+        set_statements.push(quote! {
+            self.algorithm.set_input(#input_name, #ident)
+                .expect("codegen error: input should be valid");
+        });
     }
 
     let doc_comment = generate_compute_docs(algorithm_introspection);
 
     quote! {
         #doc_comment
-        pub fn compute(&mut self, #(#p,)*) -> Result<#algorithm_result_struct_name<'a, '_>, ComputationError> {
+        pub fn compute(&mut self, #(#p,)*) -> Result<#algorithm_result_struct_name<'a, '_>, crate::error::ComputeError> {
             #(#set_statements)*
 
             Ok(#algorithm_result_struct_name {

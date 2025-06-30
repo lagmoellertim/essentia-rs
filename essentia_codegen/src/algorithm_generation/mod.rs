@@ -27,13 +27,20 @@ pub fn generate_algorithm_module(algorithm_introspection: &AlgorithmIntrospectio
         &algorithm_introspection.name().trim().to_case(Case::Pascal)
     );
 
+    let algorithm_impl_struct_name = format_ident!(
+        "{}Algorithm",
+        &algorithm_introspection.name().trim().to_case(Case::Pascal)
+    );
+
     let algorithm_result_struct_name = format_ident!(
         "{}Result",
         &algorithm_introspection.name().trim().to_case(Case::Pascal)
     );
 
+    let algorithm_name = algorithm_introspection.name();
     let description = string_to_doc_comment(algorithm_introspection.description());
-    let parameter_functions = generate_parameter_functions(algorithm_introspection);
+    let parameter_functions =
+        generate_parameter_functions(algorithm_introspection, &algorithm_impl_struct_name);
     let compute_function = generate_compute_function(
         algorithm_result_struct_name.clone(),
         algorithm_introspection,
@@ -42,34 +49,47 @@ pub fn generate_algorithm_module(algorithm_introspection: &AlgorithmIntrospectio
 
     parse_quote! {
         use essentia_core::{
-            algorithm::{
-                Algorithm, ComputationError, ComputeResult, ConfigurationError, Configured, Initialized,
-                InputError, OutputError, ParameterError,
-            },
+            algorithm::{Algorithm, Configured, Initialized},
             variant_data::{TryIntoVariantData, VariantData, variant},
         };
 
         #description
-        pub struct #algorithm_struct_name<'a, State> {
+        pub struct #algorithm_impl_struct_name<'a, State> {
             algorithm: Algorithm<'a, State>
         }
 
-        impl <'a> #algorithm_struct_name<'a, Initialized> {
+        impl <'a> #algorithm_impl_struct_name<'a, Initialized> {
             #(#parameter_functions)*
 
-            pub fn configure(self) -> Result<#algorithm_struct_name<'a, Configured>, ConfigurationError> {
-                Ok(#algorithm_struct_name {
+            /// Configure the algorithm with the set parameters
+            ///
+            /// Returns a configured algorithm ready for computation.
+            pub fn configure(self) -> Result<#algorithm_impl_struct_name<'a, Configured>, crate::error::ConfigureError> {
+                Ok(#algorithm_impl_struct_name {
                     algorithm: self.algorithm.configure()?,
                 })
             }
         }
 
-        impl <'a> #algorithm_struct_name<'a, Configured> {
+        impl <'a> #algorithm_impl_struct_name<'a, Configured> {
             #compute_function
         }
 
+        pub struct #algorithm_struct_name;
+
+        impl<'a> crate::CreateAlgorithm<'a> for #algorithm_struct_name {
+            type Output = #algorithm_impl_struct_name<'a, Initialized>;
+            fn create(essentia: &'a essentia_core::essentia::Essentia) -> Self::Output {
+                let algorithm = essentia
+                    .create_algorithm(#algorithm_name)
+                    .expect("Algorithm should be available");
+
+                Self::Output { algorithm }
+            }
+        }
+
         pub struct #algorithm_result_struct_name<'algorithm, 'result> {
-            compute_result: ComputeResult<'algorithm, 'result>
+            compute_result: essentia_core::algorithm::ComputeResult<'algorithm, 'result>
         }
 
         impl <'algorithm, 'result> #algorithm_result_struct_name<'algorithm, 'result> {
