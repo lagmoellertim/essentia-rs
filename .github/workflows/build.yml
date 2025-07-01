@@ -1,7 +1,7 @@
 name: Rust Build with Essentia
 
 on:
-  workflow_call:
+  workflow_dispatch:
 
 jobs:
   build:
