@@ -12,6 +12,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Install curl and wget
+      run: |
+        apt-get update
+        apt-get install -y curl wget
+        
     - name: Install Rust
       uses: actions-rs/toolchain@v1
       with:
