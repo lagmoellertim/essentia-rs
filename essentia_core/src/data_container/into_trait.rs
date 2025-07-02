@@ -7,6 +7,13 @@ use crate::{
     pool::Pool,
 };
 
+fn complex_to_ffi(complex: &num::Complex<f32>) -> ffi::Complex {
+    ffi::Complex {
+        real: complex.re,
+        imag: complex.im,
+    }
+}
+
 pub trait IntoDataContainer<T> {
     fn into_data_container(self) -> DataContainer<'static, T>;
 }
@@ -75,7 +82,9 @@ impl IntoDataContainer<data_type::StereoSample> for ffi::StereoSample {
 
 impl IntoDataContainer<data_type::Complex> for num::Complex<f32> {
     fn into_data_container(self) -> DataContainer<'static, data_type::Complex> {
-        DataContainer::new_owned(ffi::create_data_container_from_complex(self.into()))
+        DataContainer::new_owned(ffi::create_data_container_from_complex(complex_to_ffi(
+            &self,
+        )))
     }
 }
 
@@ -130,7 +139,7 @@ impl<'a> IntoDataContainer<data_type::VectorStereoSample> for &'a [ffi::StereoSa
 
 impl<'a> IntoDataContainer<data_type::VectorComplex> for &'a [num::Complex<f32>] {
     fn into_data_container(self) -> DataContainer<'static, data_type::VectorComplex> {
-        let ffi_vec: Vec<ffi::Complex> = self.iter().map(|c| c.into()).collect();
+        let ffi_vec: Vec<ffi::Complex> = self.iter().map(|c| complex_to_ffi(c)).collect();
         DataContainer::new_owned(ffi::create_data_container_from_vector_complex(&ffi_vec))
     }
 }
@@ -185,7 +194,7 @@ impl<'a> IntoDataContainer<data_type::VectorVectorComplex> for &'a [Vec<num::Com
         DataContainer::new_owned(ffi::create_data_container_from_vector_vector_complex(
             self.iter()
                 .map(|item| ffi::VecComplex {
-                    vec: item.iter().map(|c| c.into()).collect(),
+                    vec: item.iter().map(|c| complex_to_ffi(c)).collect(),
                 })
                 .collect(),
         ))
@@ -252,7 +261,7 @@ impl<'a> IntoDataContainer<data_type::MapVectorComplex>
         // Convert all data first to avoid lifetime issues
         let converted_data: Vec<(String, Vec<ffi::Complex>)> = self
             .iter()
-            .map(|(key, vec)| (key.clone(), vec.iter().map(|c| c.into()).collect()))
+            .map(|(key, vec)| (key.clone(), vec.iter().map(|c| complex_to_ffi(c)).collect()))
             .collect();
 
         let entries: Vec<ffi::MapEntryVectorComplex> = converted_data

@@ -12,6 +12,7 @@ use crate::{
     essentia::Essentia,
     input_output::InputOutput,
     parameter::Parameter,
+    parameter_map::ParameterMap,
 };
 
 pub struct Initialized {

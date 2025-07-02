@@ -3,7 +3,14 @@ use ndarray::{Array2, Array4};
 use num::Complex;
 use std::collections::HashMap;
 
-use crate::data_container::ConversionError;
+use crate::{
+    data_container::{
+        ConversionError,
+        get_trait::{TryGetFromDataContainer, TryTryGetFromDataContainer},
+        into_trait::IntoDataContainer,
+    },
+    pool::Pool,
+};
 
 #[test]
 fn test_bool() {

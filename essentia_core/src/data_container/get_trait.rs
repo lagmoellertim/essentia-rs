@@ -7,6 +7,10 @@ use crate::{
     pool::Pool,
 };
 
+fn complex_from_ffi(complex: &ffi::Complex) -> num::Complex<f32> {
+    num::Complex::new(complex.real, complex.imag)
+}
+
 pub trait TryGetFromDataContainer<T> {
     fn get(&self) -> T;
 }
@@ -59,7 +63,7 @@ impl<'a> TryGetFromDataContainer<ffi::StereoSample> for DataContainer<'a, data_t
 
 impl<'a> TryGetFromDataContainer<num::Complex<f32>> for DataContainer<'a, data_type::Complex> {
     fn get(&self) -> num::Complex<f32> {
-        self.inner.as_ref().get_complex().unwrap().into()
+        complex_from_ffi(&self.inner.as_ref().get_complex().unwrap())
     }
 }
 
@@ -123,7 +127,7 @@ impl<'a> TryGetFromDataContainer<Vec<num::Complex<f32>>>
             .get_vector_complex()
             .unwrap()
             .iter()
-            .map(|c| c.into())
+            .map(|c| complex_from_ffi(c))
             .collect()
     }
 }
@@ -247,7 +251,13 @@ impl<'a> TryGetFromDataContainer<Vec<Vec<num::Complex<f32>>>>
             .get_vector_vector_complex()
             .unwrap()
             .into_iter()
-            .map(|vec_complex| vec_complex.vec.into_iter().map(|c| c.into()).collect())
+            .map(|vec_complex| {
+                vec_complex
+                    .vec
+                    .into_iter()
+                    .map(|c| complex_from_ffi(&c))
+                    .collect()
+            })
             .collect()
     }
 }
@@ -318,7 +328,7 @@ impl<'a> TryGetFromDataContainer<HashMap<String, Vec<num::Complex<f32>>>>
             .map(|entry| {
                 (
                     entry.key.to_string(),
-                    entry.value.iter().map(|c| c.into()).collect(),
+                    entry.value.iter().map(|c| complex_from_ffi(c)).collect(),
                 )
             })
             .collect()
