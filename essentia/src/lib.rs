@@ -1,43 +1,22 @@
-// Generated algorithm specific error types
-pub mod error;
+pub mod algorithm;
+pub mod essentia;
+pub use essentia_core::{data, parameter_map, pool};
 
-// Include the generated algorithms module
-pub mod algorithms {
-    include!(concat!(env!("OUT_DIR"), "/algorithms/mod.rs"));
-}
-
-// Re-export the algorithms module for easier access
-pub use algorithms::*;
-
-// Re-export core types for convenience
-pub use essentia_core::{
-    algorithm::{Configured, Initialized},
-    essentia::Essentia,
-    variant_data::{VariantData, into_other::GetVariantData, variant},
+pub use essentia_core::data::{
+    ConversionError, DataContainer, DataType, InputOutputData, IntoDataContainer, ParameterData,
+    PoolData, TryGetFromDataContainer, TryIntoDataContainer, phantom,
 };
 
-// Re-export error types - essentia_core handles its own errors
-pub use error::{
-    // Domain-specific errors
-    AlgorithmError,
-    ComputeError,
-    // Function-specific errors for generated algorithms
-    ConfigureError,
-    // Unified error
-    EssentiaError,
-    GetOutputError,
-};
+pub use algorithm::{Configured, Initialized};
+pub use essentia::Essentia;
 
-/// Trait for creating algorithms from Essentia
-pub trait CreateAlgorithm<'a> {
-    type Output;
-    fn create(essentia: &'a essentia_core::essentia::Essentia) -> Self::Output;
-}
+pub use pool::{Pool, PoolError};
 
-/// Top-level convenience function
-pub fn create<'a, T>(essentia: &'a essentia_core::essentia::Essentia) -> T::Output
-where
-    T: CreateAlgorithm<'a>,
-{
-    T::create(essentia)
-}
+// Error types
+//pub use algorithm::{
+//    ComputeError, ConfigurationError, InputError, OutputError, ParameterError, ResetError,
+//};
+
+// Centralized error handling (to be enabled)
+// pub mod error;
+// pub use error::EssentiaError;

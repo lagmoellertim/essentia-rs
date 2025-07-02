@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+cxx = "1.0.160"
 essentia-core = { path = "../essentia_core" }
 thiserror = "1.0"
 
