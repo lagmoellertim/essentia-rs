@@ -1,4 +1,4 @@
-use essentia_core::variant_data::DataType;
+use essentia_core::DataType;
 use proc_macro2::TokenStream;
 use quote::quote;
 use textwrap::fill;
@@ -29,34 +29,34 @@ pub fn string_to_doc_comment(string: &str) -> TokenStream {
     tokens
 }
 
-pub fn data_type_to_variant(data_type: &DataType) -> TokenStream {
+pub fn data_type_to_phantom(data_type: &DataType) -> TokenStream {
     match data_type {
-        DataType::Bool => quote! { variant::Bool },
-        DataType::Float => quote! { variant::Float},
-        DataType::String => quote! { variant::String},
-        DataType::Int => quote! { variant::Int},
-        DataType::UnsignedInt => quote! { variant::UnsignedInt},
-        DataType::Long => quote! { variant::Long},
-        DataType::StereoSample => quote! { variant::StereoSample},
-        DataType::Complex => quote! { variant::Complex},
-        DataType::TensorFloat => quote! { variant::TensorFloat},
-        DataType::VectorFloat => quote! { variant::VectorFloat},
-        DataType::VectorString => quote! { variant::VectorString},
-        DataType::VectorBool => quote! { variant::VectorBool},
-        DataType::VectorInt => quote! { variant::VectorInt},
-        DataType::VectorStereoSample => quote! { variant::VectorStereoSample},
-        DataType::VectorComplex => quote! { variant::VectorComplex},
-        DataType::VectorVectorFloat => quote! { variant::VectorVectorFloat},
-        DataType::VectorVectorString => quote! { variant::VectorVectorString},
-        DataType::VectorVectorStereoSample => quote! { variant::VectorVectorStereoSample},
-        DataType::VectorVectorComplex => quote! { variant::VectorVectorComplex},
-        DataType::VectorMatrixFloat => quote! { variant::VectorMatrixFloat},
-        DataType::MapVectorFloat => quote! { variant::MapVectorFloat},
-        DataType::MapVectorString => quote! { variant::MapVectorString},
-        DataType::MapVectorInt => quote! { variant::MapVectorInt},
-        DataType::MapVectorComplex => quote! { variant::MapVectorComplex},
-        DataType::MapFloat => quote! { variant::MapFloat},
-        DataType::MatrixFloat => quote! { variant::MatrixFloat},
-        DataType::Pool => quote! { variant::Pool},
+        DataType::Bool => quote! { crate::phantom::Bool },
+        DataType::Float => quote! { crate::phantom::Float},
+        DataType::String => quote! { crate::phantom::String},
+        DataType::Int => quote! { crate::phantom::Int},
+        DataType::UnsignedInt => quote! { crate::phantom::UnsignedInt},
+        DataType::Long => quote! { crate::phantom::Long},
+        DataType::StereoSample => quote! { crate::phantom::StereoSample},
+        DataType::Complex => quote! { crate::phantom::Complex},
+        DataType::TensorFloat => quote! { crate::phantom::TensorFloat},
+        DataType::VectorFloat => quote! { crate::phantom::VectorFloat},
+        DataType::VectorString => quote! { crate::phantom::VectorString},
+        DataType::VectorBool => quote! { crate::phantom::VectorBool},
+        DataType::VectorInt => quote! { crate::phantom::VectorInt},
+        DataType::VectorStereoSample => quote! { crate::phantom::VectorStereoSample},
+        DataType::VectorComplex => quote! { crate::phantom::VectorComplex},
+        DataType::VectorVectorFloat => quote! { crate::phantom::VectorVectorFloat},
+        DataType::VectorVectorString => quote! { crate::phantom::VectorVectorString},
+        DataType::VectorVectorStereoSample => quote! { crate::phantom::VectorVectorStereoSample},
+        DataType::VectorVectorComplex => quote! { crate::phantom::VectorVectorComplex},
+        DataType::VectorMatrixFloat => quote! { crate::phantom::VectorMatrixFloat},
+        DataType::MapVectorFloat => quote! { crate::phantom::MapVectorFloat},
+        DataType::MapVectorString => quote! { crate::phantom::MapVectorString},
+        DataType::MapVectorInt => quote! { crate::phantom::MapVectorInt},
+        DataType::MapVectorComplex => quote! { crate::phantom::MapVectorComplex},
+        DataType::MapFloat => quote! { crate::phantom::MapFloat},
+        DataType::MatrixFloat => quote! { crate::phantom::MatrixFloat},
+        DataType::Pool => quote! { crate::phantom::Pool},
     }
 }

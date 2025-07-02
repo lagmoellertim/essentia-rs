@@ -23,23 +23,11 @@ pub fn generate_main_module_file(
         })
         .collect();
 
-    let category_module_re_exports: Vec<TokenStream> = sorted_categorie_module_names
-        .iter()
-        .map(|category_module_name| {
-            let category_module_identifier = format_ident!("{}", category_module_name);
-            quote! {
-                pub use #category_module_identifier::*;
-            }
-        })
-        .collect();
-
     let syntax_tree = parse_quote! {
         // Auto-generated file
         // This file contains all category modules
 
         #(#category_module_declarations)*
-
-        #(#category_module_re_exports)*
     };
 
     let formatted = prettyplease::unparse(&syntax_tree);

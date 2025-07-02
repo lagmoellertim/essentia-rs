@@ -1,9 +1,11 @@
-use crate::{ffi, input_output::InputOutputType, parameter::ParameterType, variant_data::DataType};
-
 use std::collections::HashMap;
 
+use essentia_sys::ffi;
+
+use crate::data::DataType;
+
 #[derive(Debug, Clone)]
-pub struct AlgorithmIntrospection {
+pub struct Introspection {
     name: String,
     category: String,
     description: String,
@@ -12,7 +14,7 @@ pub struct AlgorithmIntrospection {
     parameter_infos: HashMap<String, ParameterInfo>,
 }
 
-impl AlgorithmIntrospection {
+impl Introspection {
     pub fn from_algorithm_bridge(algorithm_bridge: &ffi::AlgorithmBridge) -> Self {
         let input_info = algorithm_bridge
             .get_input_infos()
@@ -84,7 +86,7 @@ impl AlgorithmIntrospection {
 #[derive(Debug, Clone)]
 pub struct InputOutputInfo {
     name: String,
-    input_output_type: InputOutputType,
+    data_type: DataType,
     description: String,
 }
 
@@ -92,8 +94,8 @@ impl InputOutputInfo {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn input_output_type(&self) -> InputOutputType {
-        self.input_output_type
+    pub fn input_output_type(&self) -> DataType {
+        self.data_type
     }
     pub fn description(&self) -> &str {
         &self.description
@@ -103,12 +105,10 @@ impl InputOutputInfo {
 impl From<ffi::InputOutputInfo> for InputOutputInfo {
     fn from(value: ffi::InputOutputInfo) -> Self {
         let data_type = DataType::from(value.data_type);
-        let input_output_type =
-            InputOutputType::try_from(data_type).expect("Invalid input/output type");
 
         InputOutputInfo {
             name: value.name,
-            input_output_type: input_output_type,
+            data_type,
             description: value.description,
         }
     }
@@ -161,7 +161,7 @@ impl Constraint {
 #[derive(Debug, Clone)]
 pub struct ParameterInfo {
     name: String,
-    parameter_type: ParameterType,
+    data_type: DataType,
     description: String,
     constraint: Constraint,
     default_value: String,
@@ -171,8 +171,8 @@ impl ParameterInfo {
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn parameter_type(&self) -> ParameterType {
-        self.parameter_type
+    pub fn parameter_type(&self) -> DataType {
+        self.data_type
     }
     pub fn description(&self) -> &str {
         &self.description
@@ -184,20 +184,19 @@ impl ParameterInfo {
         &self.default_value
     }
     pub fn optional(&self) -> bool {
-        self.default_value != ""
+        !self.default_value.is_empty()
     }
 }
 
 impl From<ffi::ParameterInfo> for ParameterInfo {
     fn from(value: ffi::ParameterInfo) -> Self {
         let data_type = DataType::from(value.data_type);
-        let parameter_type = ParameterType::try_from(data_type).expect("Invalid parameter type");
 
         ParameterInfo {
             name: value.name,
-            parameter_type,
+            data_type,
             description: value.description,
-            constraint: value.constraint.as_str().into(),
+            constraint: Constraint::from(value.constraint.as_str()),
             default_value: value.default_value,
         }
     }

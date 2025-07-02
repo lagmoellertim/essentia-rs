@@ -43,8 +43,8 @@ pub fn generate_code(out_dir: &Path) -> std::io::Result<()> {
         .map(|algorithm_name| {
             let algorithm = essentia.create_algorithm(algorithm_name).unwrap();
             let introspection = algorithm.introspection();
-            let result = generate_algorithm_module_file(introspection, out_dir);
-            result
+
+            generate_algorithm_module_file(introspection, out_dir)
         })
         .collect::<std::io::Result<_>>()?;
 
