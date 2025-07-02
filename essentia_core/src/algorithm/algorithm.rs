@@ -1,17 +1,15 @@
-use std::marker::PhantomData;
-
 use cxx::UniquePtr;
 use essentia_sys::ffi;
+use std::marker::PhantomData;
 
 use crate::{
     algorithm::{
         ComputeError, ConfigurationError, InputError, Introspection, OutputError, ParameterError,
         ResetError,
     },
-    data_container::{DataContainer, DataType, TryIntoDataContainer},
+    data::types::HasDataType,
+    data::{DataContainer, DataType, InputOutputData, ParameterData, TryIntoDataContainer},
     essentia::Essentia,
-    input_output::InputOutput,
-    parameter::Parameter,
     parameter_map::ParameterMap,
 };
 
@@ -21,7 +19,7 @@ pub struct Initialized {
 
 pub struct Configured;
 
-pub struct Algorithm<'a, State> {
+pub struct Algorithm<'a, State = Initialized> {
     algorithm_bridge: UniquePtr<ffi::AlgorithmBridge>,
     state: State,
     introspection: Introspection,
@@ -48,31 +46,40 @@ impl<'a> Algorithm<'a, Initialized> {
         }
     }
 
-    pub fn parameter<T: Parameter>(
+    pub fn parameter<T>(
         mut self,
         key: &str,
         value: impl TryIntoDataContainer<T>,
-    ) -> Result<Self, ParameterError> {
+    ) -> Result<Self, ParameterError>
+    where
+        T: ParameterData + HasDataType,
+    {
         self.set_parameter(key, value)?;
         Ok(self)
     }
 
-    pub fn set_parameter<T: Parameter>(
+    pub fn set_parameter<T>(
         &mut self,
         key: &str,
         value: impl TryIntoDataContainer<T>,
-    ) -> Result<(), ParameterError> {
+    ) -> Result<(), ParameterError>
+    where
+        T: ParameterData + HasDataType,
+    {
         let param_info = self.introspection.get_parameter(key).ok_or_else(|| {
             ParameterError::ParameterNotFound {
                 parameter: key.to_string(),
             }
         })?;
 
-        if param_info.parameter_type() != T::parameter_type() {
+        let expected_type = T::data_type();
+        let param_data_type = DataType::from(param_info.parameter_type());
+
+        if param_data_type != expected_type {
             return Err(ParameterError::TypeMismatch {
                 parameter: key.to_string(),
-                expected: T::parameter_type(),
-                actual: param_info.parameter_type(),
+                expected: expected_type,
+                actual: param_data_type,
             });
         }
 
@@ -104,20 +111,26 @@ impl<'a> Algorithm<'a, Initialized> {
 }
 
 impl<'a> Algorithm<'a, Configured> {
-    pub fn input<T: InputOutput>(
+    pub fn input<T>(
         mut self,
         key: &str,
         value: impl TryIntoDataContainer<T>,
-    ) -> Result<Self, InputError> {
+    ) -> Result<Self, InputError>
+    where
+        T: InputOutputData + HasDataType,
+    {
         self.set_input(key, value)?;
         Ok(self)
     }
 
-    pub fn set_input<T: InputOutput>(
+    pub fn set_input<T>(
         &mut self,
         key: &str,
         value: impl TryIntoDataContainer<T>,
-    ) -> Result<(), InputError> {
+    ) -> Result<(), InputError>
+    where
+        T: InputOutputData + HasDataType,
+    {
         let input_info =
             self.introspection
                 .get_input(key)
@@ -125,11 +138,14 @@ impl<'a> Algorithm<'a, Configured> {
                     input: key.to_string(),
                 })?;
 
-        if input_info.input_output_type() != T::input_output_type() {
+        let expected_type = T::data_type();
+        let input_data_type = DataType::from(input_info.input_output_type());
+
+        if input_data_type != expected_type {
             return Err(InputError::TypeMismatch {
                 input: key.to_string(),
-                expected: T::input_output_type(),
-                actual: input_info.input_output_type(),
+                expected: expected_type,
+                actual: input_data_type,
             });
         }
 
@@ -190,7 +206,7 @@ pub struct ComputeResult<'algorithm, 'result> {
 impl<'algorithm, 'result> ComputeResult<'algorithm, 'result> {
     pub fn output<T>(&self, key: &str) -> Result<DataContainer<'result, T>, OutputError>
     where
-        T: InputOutput,
+        T: InputOutputData + HasDataType,
     {
         let output_info = self
             .algorithm
@@ -200,11 +216,14 @@ impl<'algorithm, 'result> ComputeResult<'algorithm, 'result> {
                 output: key.to_string(),
             })?;
 
-        if output_info.input_output_type() != T::input_output_type() {
+        let expected_type = T::data_type();
+        let output_data_type = DataType::from(output_info.input_output_type());
+
+        if output_data_type != expected_type {
             return Err(OutputError::TypeMismatch {
                 output: key.to_string(),
-                expected: T::input_output_type(),
-                actual: output_info.input_output_type(),
+                expected: expected_type,
+                actual: output_data_type,
             });
         }
 

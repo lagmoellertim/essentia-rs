@@ -2,72 +2,66 @@ use essentia_sys::ffi;
 use ndarray::{Array2, Array4};
 use std::collections::HashMap;
 
-use crate::{
-    data_container::{ConversionError, DataContainer, data_type},
-    pool::Pool,
-};
+use crate::{ConversionError, DataContainer, Pool, phantom};
 
-fn complex_from_ffi(complex: &ffi::Complex) -> num::Complex<f32> {
-    num::Complex::new(complex.real, complex.imag)
-}
-
-pub trait TryGetFromDataContainer<T> {
+pub trait GetFromDataContainer<T> {
     fn get(&self) -> T;
 }
 
-pub trait TryTryGetFromDataContainer<T> {
+pub trait TryGetFromDataContainer<T> {
     fn try_get(&self) -> Result<T, ConversionError>;
 }
 
-impl<'a> TryGetFromDataContainer<bool> for DataContainer<'a, data_type::Bool> {
+impl<'a> GetFromDataContainer<bool> for DataContainer<'a, phantom::Bool> {
     fn get(&self) -> bool {
         self.inner.as_ref().get_bool().unwrap()
     }
 }
 
-impl<'a> TryGetFromDataContainer<String> for DataContainer<'a, data_type::String> {
+impl<'a> GetFromDataContainer<String> for DataContainer<'a, phantom::String> {
     fn get(&self) -> String {
         self.inner.as_ref().get_string().unwrap().to_string()
     }
 }
 
-impl<'a> TryGetFromDataContainer<i32> for DataContainer<'a, data_type::Int> {
+impl<'a> GetFromDataContainer<i32> for DataContainer<'a, phantom::Int> {
     fn get(&self) -> i32 {
         self.inner.as_ref().get_int().unwrap()
     }
 }
 
-impl<'a> TryGetFromDataContainer<f32> for DataContainer<'a, data_type::Float> {
+impl<'a> GetFromDataContainer<f32> for DataContainer<'a, phantom::Float> {
     fn get(&self) -> f32 {
         self.inner.as_ref().get_float().unwrap()
     }
 }
 
-impl<'a> TryGetFromDataContainer<u32> for DataContainer<'a, data_type::UnsignedInt> {
+impl<'a> GetFromDataContainer<u32> for DataContainer<'a, phantom::UnsignedInt> {
     fn get(&self) -> u32 {
         self.inner.as_ref().get_unsigned_int().unwrap()
     }
 }
 
-impl<'a> TryGetFromDataContainer<i64> for DataContainer<'a, data_type::Long> {
+impl<'a> GetFromDataContainer<i64> for DataContainer<'a, phantom::Long> {
     fn get(&self) -> i64 {
         self.inner.as_ref().get_long().unwrap()
     }
 }
 
-impl<'a> TryGetFromDataContainer<ffi::StereoSample> for DataContainer<'a, data_type::StereoSample> {
+impl<'a> GetFromDataContainer<ffi::StereoSample> for DataContainer<'a, phantom::StereoSample> {
     fn get(&self) -> ffi::StereoSample {
         self.inner.as_ref().get_stereo_sample().unwrap()
     }
 }
 
-impl<'a> TryGetFromDataContainer<num::Complex<f32>> for DataContainer<'a, data_type::Complex> {
+impl<'a> GetFromDataContainer<num::Complex<f32>> for DataContainer<'a, phantom::Complex> {
     fn get(&self) -> num::Complex<f32> {
-        complex_from_ffi(&self.inner.as_ref().get_complex().unwrap())
+        let ffi_complex = self.inner.as_ref().get_complex().unwrap();
+        num::Complex::new(ffi_complex.real, ffi_complex.imag)
     }
 }
 
-impl<'a> TryGetFromDataContainer<Array4<f32>> for DataContainer<'a, data_type::TensorFloat> {
+impl<'a> GetFromDataContainer<Array4<f32>> for DataContainer<'a, phantom::TensorFloat> {
     fn get(&self) -> Array4<f32> {
         let tensor = self.inner.as_ref().get_tensor_float().unwrap();
 
@@ -82,32 +76,32 @@ impl<'a> TryGetFromDataContainer<Array4<f32>> for DataContainer<'a, data_type::T
     }
 }
 
-impl<'a> TryGetFromDataContainer<Vec<bool>> for DataContainer<'a, data_type::VectorBool> {
+impl<'a> GetFromDataContainer<Vec<bool>> for DataContainer<'a, phantom::VectorBool> {
     fn get(&self) -> Vec<bool> {
         self.inner.as_ref().get_vector_bool().unwrap()
     }
 }
 
-impl<'a> TryGetFromDataContainer<Vec<i32>> for DataContainer<'a, data_type::VectorInt> {
+impl<'a> GetFromDataContainer<Vec<i32>> for DataContainer<'a, phantom::VectorInt> {
     fn get(&self) -> Vec<i32> {
         self.inner.as_ref().get_vector_int().unwrap().to_vec()
     }
 }
 
-impl<'a> TryGetFromDataContainer<Vec<String>> for DataContainer<'a, data_type::VectorString> {
+impl<'a> GetFromDataContainer<Vec<String>> for DataContainer<'a, phantom::VectorString> {
     fn get(&self) -> Vec<String> {
         self.inner.as_ref().get_vector_string().unwrap()
     }
 }
 
-impl<'a> TryGetFromDataContainer<Vec<f32>> for DataContainer<'a, data_type::VectorFloat> {
+impl<'a> GetFromDataContainer<Vec<f32>> for DataContainer<'a, phantom::VectorFloat> {
     fn get(&self) -> Vec<f32> {
         self.inner.as_ref().get_vector_float().unwrap().to_vec()
     }
 }
 
-impl<'a> TryGetFromDataContainer<Vec<ffi::StereoSample>>
-    for DataContainer<'a, data_type::VectorStereoSample>
+impl<'a> GetFromDataContainer<Vec<ffi::StereoSample>>
+    for DataContainer<'a, phantom::VectorStereoSample>
 {
     fn get(&self) -> Vec<ffi::StereoSample> {
         self.inner
@@ -118,8 +112,8 @@ impl<'a> TryGetFromDataContainer<Vec<ffi::StereoSample>>
     }
 }
 
-impl<'a> TryGetFromDataContainer<Vec<num::Complex<f32>>>
-    for DataContainer<'a, data_type::VectorComplex>
+impl<'a> GetFromDataContainer<Vec<num::Complex<f32>>>
+    for DataContainer<'a, phantom::VectorComplex>
 {
     fn get(&self) -> Vec<num::Complex<f32>> {
         self.inner
@@ -127,12 +121,12 @@ impl<'a> TryGetFromDataContainer<Vec<num::Complex<f32>>>
             .get_vector_complex()
             .unwrap()
             .iter()
-            .map(|c| complex_from_ffi(c))
+            .map(|c| num::Complex::new(c.real, c.imag))
             .collect()
     }
 }
 
-impl<'a> TryGetFromDataContainer<Array2<f32>> for DataContainer<'a, data_type::MatrixFloat> {
+impl<'a> GetFromDataContainer<Array2<f32>> for DataContainer<'a, phantom::MatrixFloat> {
     fn get(&self) -> Array2<f32> {
         let matrix_float = self.inner.as_ref().get_matrix_float().unwrap();
 
@@ -144,9 +138,7 @@ impl<'a> TryGetFromDataContainer<Array2<f32>> for DataContainer<'a, data_type::M
     }
 }
 
-impl<'a> TryGetFromDataContainer<Vec<Array2<f32>>>
-    for DataContainer<'a, data_type::VectorMatrixFloat>
-{
+impl<'a> GetFromDataContainer<Vec<Array2<f32>>> for DataContainer<'a, phantom::VectorMatrixFloat> {
     fn get(&self) -> Vec<Array2<f32>> {
         let matrices = self.inner.as_ref().get_vector_matrix_float().unwrap();
 
@@ -163,9 +155,7 @@ impl<'a> TryGetFromDataContainer<Vec<Array2<f32>>>
     }
 }
 
-impl<'a> TryGetFromDataContainer<Vec<Vec<f32>>>
-    for DataContainer<'a, data_type::VectorVectorFloat>
-{
+impl<'a> GetFromDataContainer<Vec<Vec<f32>>> for DataContainer<'a, phantom::VectorVectorFloat> {
     fn get(&self) -> Vec<Vec<f32>> {
         self.inner
             .as_ref()
@@ -177,27 +167,32 @@ impl<'a> TryGetFromDataContainer<Vec<Vec<f32>>>
     }
 }
 
-impl<'a> TryTryGetFromDataContainer<Array2<f32>>
-    for DataContainer<'a, data_type::VectorVectorFloat>
-{
+impl<'a> TryGetFromDataContainer<Array2<f32>> for DataContainer<'a, phantom::VectorVectorFloat> {
     fn try_get(&self) -> Result<Array2<f32>, ConversionError> {
         let vec_vec_data = self.inner.as_ref().get_vector_vector_float().unwrap();
 
         if vec_vec_data.is_empty() {
-            return Err(ConversionError::EmptyMatrix);
+            return Err(ConversionError::InvalidFormat {
+                message: "Cannot create matrix from empty vector".to_string(),
+            });
         }
 
         let expected_cols = vec_vec_data[0].slice.len();
         if expected_cols == 0 {
-            return Err(ConversionError::EmptyRows);
+            return Err(ConversionError::InvalidFormat {
+                message: "Cannot create matrix from empty rows".to_string(),
+            });
         }
 
         for (row_idx, row_data) in vec_vec_data.iter().enumerate() {
             if row_data.slice.len() != expected_cols {
-                return Err(ConversionError::NonRectangular {
-                    row: row_idx,
-                    expected: expected_cols,
-                    actual: row_data.slice.len(),
+                return Err(ConversionError::InvalidFormat {
+                    message: format!(
+                        "Non-rectangular matrix: row {} has {} elements, expected {}",
+                        row_idx,
+                        row_data.slice.len(),
+                        expected_cols
+                    ),
                 });
             }
         }
@@ -214,9 +209,7 @@ impl<'a> TryTryGetFromDataContainer<Array2<f32>>
     }
 }
 
-impl<'a> TryGetFromDataContainer<Vec<Vec<String>>>
-    for DataContainer<'a, data_type::VectorVectorString>
-{
+impl<'a> GetFromDataContainer<Vec<Vec<String>>> for DataContainer<'a, phantom::VectorVectorString> {
     fn get(&self) -> Vec<Vec<String>> {
         self.inner
             .as_ref()
@@ -228,8 +221,8 @@ impl<'a> TryGetFromDataContainer<Vec<Vec<String>>>
     }
 }
 
-impl<'a> TryGetFromDataContainer<Vec<Vec<ffi::StereoSample>>>
-    for DataContainer<'a, data_type::VectorVectorStereoSample>
+impl<'a> GetFromDataContainer<Vec<Vec<ffi::StereoSample>>>
+    for DataContainer<'a, phantom::VectorVectorStereoSample>
 {
     fn get(&self) -> Vec<Vec<ffi::StereoSample>> {
         self.inner
@@ -242,8 +235,8 @@ impl<'a> TryGetFromDataContainer<Vec<Vec<ffi::StereoSample>>>
     }
 }
 
-impl<'a> TryGetFromDataContainer<Vec<Vec<num::Complex<f32>>>>
-    for DataContainer<'a, data_type::VectorVectorComplex>
+impl<'a> GetFromDataContainer<Vec<Vec<num::Complex<f32>>>>
+    for DataContainer<'a, phantom::VectorVectorComplex>
 {
     fn get(&self) -> Vec<Vec<num::Complex<f32>>> {
         self.inner
@@ -255,14 +248,14 @@ impl<'a> TryGetFromDataContainer<Vec<Vec<num::Complex<f32>>>>
                 vec_complex
                     .vec
                     .into_iter()
-                    .map(|c| complex_from_ffi(&c))
+                    .map(|c| num::Complex::new(c.real, c.imag))
                     .collect()
             })
             .collect()
     }
 }
 
-impl<'a> TryGetFromDataContainer<HashMap<String, f32>> for DataContainer<'a, data_type::MapFloat> {
+impl<'a> GetFromDataContainer<HashMap<String, f32>> for DataContainer<'a, phantom::MapFloat> {
     fn get(&self) -> HashMap<String, f32> {
         self.inner
             .as_ref()
@@ -274,8 +267,8 @@ impl<'a> TryGetFromDataContainer<HashMap<String, f32>> for DataContainer<'a, dat
     }
 }
 
-impl<'a> TryGetFromDataContainer<HashMap<String, Vec<f32>>>
-    for DataContainer<'a, data_type::MapVectorFloat>
+impl<'a> GetFromDataContainer<HashMap<String, Vec<f32>>>
+    for DataContainer<'a, phantom::MapVectorFloat>
 {
     fn get(&self) -> HashMap<String, Vec<f32>> {
         self.inner
@@ -288,8 +281,8 @@ impl<'a> TryGetFromDataContainer<HashMap<String, Vec<f32>>>
     }
 }
 
-impl<'a> TryGetFromDataContainer<HashMap<String, Vec<String>>>
-    for DataContainer<'a, data_type::MapVectorString>
+impl<'a> GetFromDataContainer<HashMap<String, Vec<String>>>
+    for DataContainer<'a, phantom::MapVectorString>
 {
     fn get(&self) -> HashMap<String, Vec<String>> {
         self.inner
@@ -302,8 +295,8 @@ impl<'a> TryGetFromDataContainer<HashMap<String, Vec<String>>>
     }
 }
 
-impl<'a> TryGetFromDataContainer<HashMap<String, Vec<i32>>>
-    for DataContainer<'a, data_type::MapVectorInt>
+impl<'a> GetFromDataContainer<HashMap<String, Vec<i32>>>
+    for DataContainer<'a, phantom::MapVectorInt>
 {
     fn get(&self) -> HashMap<String, Vec<i32>> {
         self.inner
@@ -316,8 +309,8 @@ impl<'a> TryGetFromDataContainer<HashMap<String, Vec<i32>>>
     }
 }
 
-impl<'a> TryGetFromDataContainer<HashMap<String, Vec<num::Complex<f32>>>>
-    for DataContainer<'a, data_type::MapVectorComplex>
+impl<'a> GetFromDataContainer<HashMap<String, Vec<num::Complex<f32>>>>
+    for DataContainer<'a, phantom::MapVectorComplex>
 {
     fn get(&self) -> HashMap<String, Vec<num::Complex<f32>>> {
         self.inner
@@ -328,7 +321,11 @@ impl<'a> TryGetFromDataContainer<HashMap<String, Vec<num::Complex<f32>>>>
             .map(|entry| {
                 (
                     entry.key.to_string(),
-                    entry.value.iter().map(|c| complex_from_ffi(c)).collect(),
+                    entry
+                        .value
+                        .iter()
+                        .map(|c| num::Complex::new(c.real, c.imag))
+                        .collect(),
                 )
             })
             .collect()
@@ -336,7 +333,7 @@ impl<'a> TryGetFromDataContainer<HashMap<String, Vec<num::Complex<f32>>>>
 }
 
 // TODO Maybe the Pool should be take a reference to the PoolBridge?
-impl<'a> TryGetFromDataContainer<Pool> for DataContainer<'a, data_type::Pool> {
+impl<'a> GetFromDataContainer<Pool> for DataContainer<'a, phantom::Pool> {
     fn get(&self) -> Pool {
         let pool_bridge_ref = self.inner.as_ref().get_pool();
         let cloned_bridge = pool_bridge_ref.clone();

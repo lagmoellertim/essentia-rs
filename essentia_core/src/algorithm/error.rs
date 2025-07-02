@@ -1,23 +1,20 @@
-use cxx::Exception;
 use thiserror::Error;
 
-use crate::{
-    data_container::ConversionError, input_output::InputOutputType, parameter::ParameterType,
-};
+use crate::data::{ConversionError, DataType};
 
 #[derive(Debug, Error)]
 pub enum ParameterError {
-    #[error("no parameter named '{parameter}' found")]
+    #[error("Parameter '{parameter}' not found")]
     ParameterNotFound { parameter: String },
 
-    #[error("type mismatch for parameter '{parameter}': expected {expected:?}, got {actual:?}")]
+    #[error("Type mismatch for parameter '{parameter}': expected {expected}, found {actual}")]
     TypeMismatch {
         parameter: String,
-        expected: ParameterType,
-        actual: ParameterType,
+        expected: DataType,
+        actual: DataType,
     },
 
-    #[error("failed to convert data for parameter '{parameter}': {source}")]
+    #[error("Failed to convert data for parameter '{parameter}': {source}")]
     DataConversion {
         parameter: String,
         #[source]
@@ -27,62 +24,72 @@ pub enum ParameterError {
 
 #[derive(Debug, Error)]
 pub enum ConfigurationError {
-    #[error("algorithm configuration failed: {0}")]
-    Internal(#[from] Exception),
-
-    #[error("parameter validation failed: {0}")]
-    Parameter(#[from] ParameterError),
+    #[error("Configuration failed: {0}")]
+    Internal(#[from] cxx::Exception),
 }
 
 #[derive(Debug, Error)]
 pub enum InputError {
-    #[error("no input named '{input}' found")]
+    #[error("Input '{input}' not found")]
     InputNotFound { input: String },
 
-    #[error("type mismatch for input '{input}': expected {expected:?}, got {actual:?}")]
+    #[error("Type mismatch for input '{input}': expected {expected}, found {actual}")]
     TypeMismatch {
         input: String,
-        expected: InputOutputType,
-        actual: InputOutputType,
+        expected: DataType,
+        actual: DataType,
     },
 
-    #[error("failed to convert data for input '{input}': {source}")]
+    #[error("Failed to convert data for input '{input}': {source}")]
     DataConversion {
         input: String,
         #[source]
         source: ConversionError,
     },
 
-    #[error("failed to set input '{input}': internal error - {source}")]
-    Internal { input: String, source: Exception },
+    #[error("Internal error for input '{input}': {source}")]
+    Internal {
+        input: String,
+        #[source]
+        source: cxx::Exception,
+    },
+}
+
+#[derive(Debug, Error)]
+pub enum OutputError {
+    #[error("Output '{output}' not found")]
+    OutputNotFound { output: String },
+
+    #[error("Type mismatch for output '{output}': expected {expected}, found {actual}")]
+    TypeMismatch {
+        output: String,
+        expected: DataType,
+        actual: DataType,
+    },
+
+    #[error("Internal error for output '{output}': {source}")]
+    Internal {
+        output: String,
+        #[source]
+        source: cxx::Exception,
+    },
 }
 
 #[derive(Debug, Error)]
 pub enum ComputeError {
-    #[error("failed to setup output '{output}': {source}")]
-    OutputSetup { output: String, source: Exception },
+    #[error("Failed to setup output '{output}': {source}")]
+    OutputSetup {
+        output: String,
+        #[source]
+        source: cxx::Exception,
+    },
 
-    #[error("algorithm computation failed: {0}")]
-    Compute(Exception),
+    #[error("Computation failed: {0}")]
+    Compute(#[from] cxx::Exception),
 }
 
 #[derive(Debug, Error)]
 pub enum ResetError {
-    #[error("algorithm reset failed: {0}")]
-    Internal(#[from] Exception),
-}
-#[derive(Debug, Error)]
-pub enum OutputError {
-    #[error("no output named '{output}' found")]
-    OutputNotFound { output: String },
-
-    #[error("type mismatch for output '{output}': expected {expected:?}, got {actual:?}")]
-    TypeMismatch {
-        output: String,
-        expected: InputOutputType,
-        actual: InputOutputType,
-    },
-
-    #[error("failed to retrieve output '{output}': {source}")]
-    Internal { output: String, source: Exception },
+    #[error("Reset failed: {0}")]
+    Internal(#[from] cxx::Exception),
 }

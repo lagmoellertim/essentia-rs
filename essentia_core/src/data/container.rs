@@ -1,13 +1,22 @@
-use std::marker::PhantomData;
-
 use cxx::UniquePtr;
 use essentia_sys::ffi;
+use std::marker::PhantomData;
+use thiserror::Error;
 
-use crate::data_container::{DataType, data_type};
+use super::types::{DataType, HasDataType};
 
 pub enum DataContainerInner<'a> {
     Owned(UniquePtr<ffi::DataContainer>),
     Borrowed(&'a ffi::DataContainer),
+}
+
+impl<'a> AsRef<ffi::DataContainer> for DataContainerInner<'a> {
+    fn as_ref(&self) -> &ffi::DataContainer {
+        match self {
+            DataContainerInner::Owned(ptr) => ptr.as_ref().expect("UniquePtr should not be null"),
+            DataContainerInner::Borrowed(reference) => reference,
+        }
+    }
 }
 
 pub struct DataContainer<'a, T> {
@@ -30,7 +39,7 @@ impl<'a, T> DataContainer<'a, T> {
         }
     }
 
-    pub fn into_any(self) -> DataContainer<'a, data_type::Any> {
+    pub fn into_any(self) -> DataContainer<'a, super::types::phantom::Any> {
         DataContainer {
             inner: self.inner,
             _marker: PhantomData,
@@ -49,17 +58,37 @@ impl<'a, T> DataContainer<'a, T> {
     }
 }
 
-impl<'a> AsRef<ffi::DataContainer> for DataContainerInner<'a> {
-    fn as_ref(&self) -> &ffi::DataContainer {
-        match self {
-            DataContainerInner::Owned(ptr) => ptr.as_ref().expect("UniquePtr should not be null"),
-            DataContainerInner::Borrowed(reference) => reference,
+impl<'a, T: HasDataType> DataContainer<'a, T> {
+    pub fn compile_time_data_type() -> DataType {
+        T::data_type()
+    }
+
+    pub fn verify_type(&self) -> Result<(), TypeMismatchError> {
+        let runtime_type = self.data_type();
+        let compile_time_type = Self::compile_time_data_type();
+
+        if runtime_type == compile_time_type {
+            Ok(())
+        } else {
+            Err(TypeMismatchError {
+                expected: compile_time_type,
+                actual: runtime_type,
+            })
         }
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Error)]
+#[error("Type mismatch: expected {expected}, got {actual}")]
+pub struct TypeMismatchError {
+    pub expected: DataType,
+    pub actual: DataType,
+}
+
 fn copy_to_owned(data: &ffi::DataContainer) -> UniquePtr<ffi::DataContainer> {
-    match data.get_data_type() {
+    let data_type = data.get_data_type();
+
+    match data_type {
         ffi::DataType::Bool => {
             let value = data.get_bool().unwrap();
             ffi::create_data_container_from_bool(value)

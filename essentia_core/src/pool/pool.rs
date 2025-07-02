@@ -1,10 +1,10 @@
 use cxx::UniquePtr;
 use essentia_sys::ffi;
+use thiserror::Error;
 
-use crate::{
-    data_container::{DataContainer, DataType, IntoDataContainer},
-    pool::PoolError,
-    pool_data::{PoolData, PoolDataType},
+use crate::data::types::HasDataType;
+use crate::data::{
+    ConversionError, DataContainer, DataType, GetFromDataContainer, PoolData, TryIntoDataContainer,
 };
 
 pub struct Pool {
@@ -22,37 +22,102 @@ impl Pool {
         Self { inner: bridge }
     }
 
-    pub fn set<T: PoolData>(&mut self, key: &str, value: impl IntoDataContainer<T>) {
-        let data_container = value.into_data_container();
+    pub fn set<T>(
+        &mut self,
+        key: &str,
+        value: impl TryIntoDataContainer<T>,
+    ) -> Result<(), PoolError>
+    where
+        T: PoolData + HasDataType,
+    {
+        let data_container =
+            value
+                .try_into_data_container()
+                .map_err(|error| PoolError::DataConversion {
+                    key: key.to_string(),
+                    source: error,
+                })?;
+
         self.inner
             .pin_mut()
             .set(key, data_container.into_owned_ptr());
+
+        Ok(())
     }
 
-    pub fn get<T: PoolData>(&self, key: &str) -> Result<DataContainer<'static, T>, PoolError> {
+    pub fn get<T, R>(&self, key: &str) -> Result<R, PoolError>
+    where
+        T: PoolData + HasDataType,
+        for<'a> DataContainer<'a, T>: GetFromDataContainer<R>,
+    {
         if !self.contains(key) {
             return Err(PoolError::KeyNotFound {
                 key: key.to_string(),
             });
         }
 
-        let data_container_ffi = self.inner.as_ref().unwrap().get(key)?;
+        let data_container_ffi =
+            self.inner
+                .as_ref()
+                .unwrap()
+                .get(key)
+                .map_err(|exception| PoolError::Internal {
+                    key: key.to_string(),
+                    source: exception,
+                })?;
 
-        let expected_type = T::pool_data_type();
-        let actual_data_type: DataType =
-            data_container_ffi.as_ref().unwrap().get_data_type().into();
+        let data_container = DataContainer::new_borrowed(data_container_ffi.as_ref().unwrap());
 
-        let actual_pool_type = PoolDataType::try_from(actual_data_type).unwrap();
+        // Verify type safety at runtime (backup to compile-time checks)
+        let expected_type = T::data_type();
+        let actual_type = data_container.data_type();
 
-        if actual_pool_type != expected_type {
+        if actual_type != expected_type {
             return Err(PoolError::TypeMismatch {
                 key: key.to_string(),
                 expected: expected_type,
-                actual: actual_pool_type,
+                actual: actual_type,
             });
         }
 
-        Ok(DataContainer::new_owned(data_container_ffi))
+        Ok(data_container.get())
+    }
+
+    pub fn get_container<T>(&self, key: &str) -> Result<DataContainer<'static, T>, PoolError>
+    where
+        T: PoolData + HasDataType,
+    {
+        if !self.contains(key) {
+            return Err(PoolError::KeyNotFound {
+                key: key.to_string(),
+            });
+        }
+
+        let data_container_ffi =
+            self.inner
+                .as_ref()
+                .unwrap()
+                .get(key)
+                .map_err(|exception| PoolError::Internal {
+                    key: key.to_string(),
+                    source: exception,
+                })?;
+
+        let data_container = DataContainer::new_owned(data_container_ffi);
+
+        // Verify type safety
+        let expected_type = T::data_type();
+        let actual_type = data_container.data_type();
+
+        if actual_type != expected_type {
+            return Err(PoolError::TypeMismatch {
+                key: key.to_string(),
+                expected: expected_type,
+                actual: actual_type,
+            });
+        }
+
+        Ok(data_container)
     }
 
     pub fn contains(&self, key: &str) -> bool {
@@ -74,4 +139,31 @@ impl Pool {
     pub(crate) fn into_owned_ptr(self) -> UniquePtr<ffi::PoolBridge> {
         self.inner
     }
+}
+
+#[derive(Debug, Error)]
+pub enum PoolError {
+    #[error("Key '{key}' not found in pool")]
+    KeyNotFound { key: String },
+
+    #[error("Type mismatch for key '{key}': expected {expected}, found {actual}")]
+    TypeMismatch {
+        key: String,
+        expected: DataType,
+        actual: DataType,
+    },
+
+    #[error("Failed to convert data for key '{key}': {source}")]
+    DataConversion {
+        key: String,
+        #[source]
+        source: ConversionError,
+    },
+
+    #[error("Internal error for key '{key}': {source}")]
+    Internal {
+        key: String,
+        #[source]
+        source: cxx::Exception,
+    },
 }
