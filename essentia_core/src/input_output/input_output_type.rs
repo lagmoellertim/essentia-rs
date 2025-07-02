@@ -1,5 +1,4 @@
-use crate::variant_data::DataType;
-use core::fmt;
+use crate::data_container::DataType;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum InputOutputType {
@@ -99,11 +98,5 @@ impl From<InputOutputType> for DataType {
             InputOutputType::MatrixFloat => DataType::MatrixFloat,
             InputOutputType::Pool => DataType::Pool,
         }
-    }
-}
-
-impl fmt::Display for InputOutputType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
     }
 }

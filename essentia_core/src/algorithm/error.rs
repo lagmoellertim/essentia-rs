@@ -2,7 +2,7 @@ use cxx::Exception;
 use thiserror::Error;
 
 use crate::{
-    input_output::InputOutputType, parameter::ParameterType, variant_data::ConversionError,
+    data_container::ConversionError, input_output::InputOutputType, parameter::ParameterType,
 };
 
 #[derive(Debug, Error)]
@@ -21,7 +21,7 @@ pub enum ParameterError {
     DataConversion {
         parameter: String,
         #[source]
-        source: crate::variant_data::ConversionError,
+        source: ConversionError,
     },
 }
 

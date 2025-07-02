@@ -1,71 +1,71 @@
+use essentia_sys::ffi;
 use ndarray::{Array2, Array4};
 use std::collections::HashMap;
 
 use crate::{
-    ffi,
+    data_container::{ConversionError, DataContainer, data_type},
     pool::Pool,
-    variant_data::{ConversionError, VariantData, variant},
 };
 
-pub trait GetVariantData<T> {
+pub trait TryGetFromDataContainer<T> {
     fn get(&self) -> T;
 }
 
-pub trait TryGetVariantData<T> {
+pub trait TryTryGetFromDataContainer<T> {
     fn try_get(&self) -> Result<T, ConversionError>;
 }
 
-impl<'a> GetVariantData<bool> for VariantData<'a, variant::Bool> {
+impl<'a> TryGetFromDataContainer<bool> for DataContainer<'a, data_type::Bool> {
     fn get(&self) -> bool {
-        self.data.as_ref().get_bool().unwrap()
+        self.inner.as_ref().get_bool().unwrap()
     }
 }
 
-impl<'a> GetVariantData<String> for VariantData<'a, variant::String> {
+impl<'a> TryGetFromDataContainer<String> for DataContainer<'a, data_type::String> {
     fn get(&self) -> String {
-        self.data.as_ref().get_string().unwrap().to_string()
+        self.inner.as_ref().get_string().unwrap().to_string()
     }
 }
 
-impl<'a> GetVariantData<i32> for VariantData<'a, variant::Int> {
+impl<'a> TryGetFromDataContainer<i32> for DataContainer<'a, data_type::Int> {
     fn get(&self) -> i32 {
-        self.data.as_ref().get_int().unwrap()
+        self.inner.as_ref().get_int().unwrap()
     }
 }
 
-impl<'a> GetVariantData<f32> for VariantData<'a, variant::Float> {
+impl<'a> TryGetFromDataContainer<f32> for DataContainer<'a, data_type::Float> {
     fn get(&self) -> f32 {
-        self.data.as_ref().get_float().unwrap()
+        self.inner.as_ref().get_float().unwrap()
     }
 }
 
-impl<'a> GetVariantData<u32> for VariantData<'a, variant::UnsignedInt> {
+impl<'a> TryGetFromDataContainer<u32> for DataContainer<'a, data_type::UnsignedInt> {
     fn get(&self) -> u32 {
-        self.data.as_ref().get_unsigned_int().unwrap()
+        self.inner.as_ref().get_unsigned_int().unwrap()
     }
 }
 
-impl<'a> GetVariantData<i64> for VariantData<'a, variant::Long> {
+impl<'a> TryGetFromDataContainer<i64> for DataContainer<'a, data_type::Long> {
     fn get(&self) -> i64 {
-        self.data.as_ref().get_long().unwrap()
+        self.inner.as_ref().get_long().unwrap()
     }
 }
 
-impl<'a> GetVariantData<ffi::StereoSample> for VariantData<'a, variant::StereoSample> {
+impl<'a> TryGetFromDataContainer<ffi::StereoSample> for DataContainer<'a, data_type::StereoSample> {
     fn get(&self) -> ffi::StereoSample {
-        self.data.as_ref().get_stereo_sample().unwrap()
+        self.inner.as_ref().get_stereo_sample().unwrap()
     }
 }
 
-impl<'a> GetVariantData<num::Complex<f32>> for VariantData<'a, variant::Complex> {
+impl<'a> TryGetFromDataContainer<num::Complex<f32>> for DataContainer<'a, data_type::Complex> {
     fn get(&self) -> num::Complex<f32> {
-        self.data.as_ref().get_complex().unwrap().into()
+        self.inner.as_ref().get_complex().unwrap().into()
     }
 }
 
-impl<'a> GetVariantData<Array4<f32>> for VariantData<'a, variant::TensorFloat> {
+impl<'a> TryGetFromDataContainer<Array4<f32>> for DataContainer<'a, data_type::TensorFloat> {
     fn get(&self) -> Array4<f32> {
-        let tensor = self.data.as_ref().get_tensor_float().unwrap();
+        let tensor = self.inner.as_ref().get_tensor_float().unwrap();
 
         let shape = (
             tensor.shape[0],
@@ -78,33 +78,35 @@ impl<'a> GetVariantData<Array4<f32>> for VariantData<'a, variant::TensorFloat> {
     }
 }
 
-impl<'a> GetVariantData<Vec<bool>> for VariantData<'a, variant::VectorBool> {
+impl<'a> TryGetFromDataContainer<Vec<bool>> for DataContainer<'a, data_type::VectorBool> {
     fn get(&self) -> Vec<bool> {
-        self.data.as_ref().get_vector_bool().unwrap()
+        self.inner.as_ref().get_vector_bool().unwrap()
     }
 }
 
-impl<'a> GetVariantData<Vec<i32>> for VariantData<'a, variant::VectorInt> {
+impl<'a> TryGetFromDataContainer<Vec<i32>> for DataContainer<'a, data_type::VectorInt> {
     fn get(&self) -> Vec<i32> {
-        self.data.as_ref().get_vector_int().unwrap().to_vec()
+        self.inner.as_ref().get_vector_int().unwrap().to_vec()
     }
 }
 
-impl<'a> GetVariantData<Vec<String>> for VariantData<'a, variant::VectorString> {
+impl<'a> TryGetFromDataContainer<Vec<String>> for DataContainer<'a, data_type::VectorString> {
     fn get(&self) -> Vec<String> {
-        self.data.as_ref().get_vector_string().unwrap()
+        self.inner.as_ref().get_vector_string().unwrap()
     }
 }
 
-impl<'a> GetVariantData<Vec<f32>> for VariantData<'a, variant::VectorFloat> {
+impl<'a> TryGetFromDataContainer<Vec<f32>> for DataContainer<'a, data_type::VectorFloat> {
     fn get(&self) -> Vec<f32> {
-        self.data.as_ref().get_vector_float().unwrap().to_vec()
+        self.inner.as_ref().get_vector_float().unwrap().to_vec()
     }
 }
 
-impl<'a> GetVariantData<Vec<ffi::StereoSample>> for VariantData<'a, variant::VectorStereoSample> {
+impl<'a> TryGetFromDataContainer<Vec<ffi::StereoSample>>
+    for DataContainer<'a, data_type::VectorStereoSample>
+{
     fn get(&self) -> Vec<ffi::StereoSample> {
-        self.data
+        self.inner
             .as_ref()
             .get_vector_stereo_sample()
             .unwrap()
@@ -112,9 +114,11 @@ impl<'a> GetVariantData<Vec<ffi::StereoSample>> for VariantData<'a, variant::Vec
     }
 }
 
-impl<'a> GetVariantData<Vec<num::Complex<f32>>> for VariantData<'a, variant::VectorComplex> {
+impl<'a> TryGetFromDataContainer<Vec<num::Complex<f32>>>
+    for DataContainer<'a, data_type::VectorComplex>
+{
     fn get(&self) -> Vec<num::Complex<f32>> {
-        self.data
+        self.inner
             .as_ref()
             .get_vector_complex()
             .unwrap()
@@ -124,9 +128,9 @@ impl<'a> GetVariantData<Vec<num::Complex<f32>>> for VariantData<'a, variant::Vec
     }
 }
 
-impl<'a> GetVariantData<Array2<f32>> for VariantData<'a, variant::MatrixFloat> {
+impl<'a> TryGetFromDataContainer<Array2<f32>> for DataContainer<'a, data_type::MatrixFloat> {
     fn get(&self) -> Array2<f32> {
-        let matrix_float = self.data.as_ref().get_matrix_float().unwrap();
+        let matrix_float = self.inner.as_ref().get_matrix_float().unwrap();
 
         Array2::from_shape_vec(
             (matrix_float.dim1, matrix_float.dim2),
@@ -136,9 +140,11 @@ impl<'a> GetVariantData<Array2<f32>> for VariantData<'a, variant::MatrixFloat> {
     }
 }
 
-impl<'a> GetVariantData<Vec<Array2<f32>>> for VariantData<'a, variant::VectorMatrixFloat> {
+impl<'a> TryGetFromDataContainer<Vec<Array2<f32>>>
+    for DataContainer<'a, data_type::VectorMatrixFloat>
+{
     fn get(&self) -> Vec<Array2<f32>> {
-        let matrices = self.data.as_ref().get_vector_matrix_float().unwrap();
+        let matrices = self.inner.as_ref().get_vector_matrix_float().unwrap();
 
         matrices
             .into_iter()
@@ -153,9 +159,11 @@ impl<'a> GetVariantData<Vec<Array2<f32>>> for VariantData<'a, variant::VectorMat
     }
 }
 
-impl<'a> GetVariantData<Vec<Vec<f32>>> for VariantData<'a, variant::VectorVectorFloat> {
+impl<'a> TryGetFromDataContainer<Vec<Vec<f32>>>
+    for DataContainer<'a, data_type::VectorVectorFloat>
+{
     fn get(&self) -> Vec<Vec<f32>> {
-        self.data
+        self.inner
             .as_ref()
             .get_vector_vector_float()
             .unwrap()
@@ -165,9 +173,11 @@ impl<'a> GetVariantData<Vec<Vec<f32>>> for VariantData<'a, variant::VectorVector
     }
 }
 
-impl<'a> TryGetVariantData<Array2<f32>> for VariantData<'a, variant::VectorVectorFloat> {
+impl<'a> TryTryGetFromDataContainer<Array2<f32>>
+    for DataContainer<'a, data_type::VectorVectorFloat>
+{
     fn try_get(&self) -> Result<Array2<f32>, ConversionError> {
-        let vec_vec_data = self.data.as_ref().get_vector_vector_float().unwrap();
+        let vec_vec_data = self.inner.as_ref().get_vector_vector_float().unwrap();
 
         if vec_vec_data.is_empty() {
             return Err(ConversionError::EmptyMatrix);
@@ -200,9 +210,11 @@ impl<'a> TryGetVariantData<Array2<f32>> for VariantData<'a, variant::VectorVecto
     }
 }
 
-impl<'a> GetVariantData<Vec<Vec<String>>> for VariantData<'a, variant::VectorVectorString> {
+impl<'a> TryGetFromDataContainer<Vec<Vec<String>>>
+    for DataContainer<'a, data_type::VectorVectorString>
+{
     fn get(&self) -> Vec<Vec<String>> {
-        self.data
+        self.inner
             .as_ref()
             .get_vector_vector_string()
             .unwrap()
@@ -212,11 +224,11 @@ impl<'a> GetVariantData<Vec<Vec<String>>> for VariantData<'a, variant::VectorVec
     }
 }
 
-impl<'a> GetVariantData<Vec<Vec<ffi::StereoSample>>>
-    for VariantData<'a, variant::VectorVectorStereoSample>
+impl<'a> TryGetFromDataContainer<Vec<Vec<ffi::StereoSample>>>
+    for DataContainer<'a, data_type::VectorVectorStereoSample>
 {
     fn get(&self) -> Vec<Vec<ffi::StereoSample>> {
-        self.data
+        self.inner
             .as_ref()
             .get_vector_vector_stereo_sample()
             .unwrap()
@@ -226,11 +238,11 @@ impl<'a> GetVariantData<Vec<Vec<ffi::StereoSample>>>
     }
 }
 
-impl<'a> GetVariantData<Vec<Vec<num::Complex<f32>>>>
-    for VariantData<'a, variant::VectorVectorComplex>
+impl<'a> TryGetFromDataContainer<Vec<Vec<num::Complex<f32>>>>
+    for DataContainer<'a, data_type::VectorVectorComplex>
 {
     fn get(&self) -> Vec<Vec<num::Complex<f32>>> {
-        self.data
+        self.inner
             .as_ref()
             .get_vector_vector_complex()
             .unwrap()
@@ -240,9 +252,9 @@ impl<'a> GetVariantData<Vec<Vec<num::Complex<f32>>>>
     }
 }
 
-impl<'a> GetVariantData<HashMap<String, f32>> for VariantData<'a, variant::MapFloat> {
+impl<'a> TryGetFromDataContainer<HashMap<String, f32>> for DataContainer<'a, data_type::MapFloat> {
     fn get(&self) -> HashMap<String, f32> {
-        self.data
+        self.inner
             .as_ref()
             .get_map_float()
             .unwrap()
@@ -252,9 +264,11 @@ impl<'a> GetVariantData<HashMap<String, f32>> for VariantData<'a, variant::MapFl
     }
 }
 
-impl<'a> GetVariantData<HashMap<String, Vec<f32>>> for VariantData<'a, variant::MapVectorFloat> {
+impl<'a> TryGetFromDataContainer<HashMap<String, Vec<f32>>>
+    for DataContainer<'a, data_type::MapVectorFloat>
+{
     fn get(&self) -> HashMap<String, Vec<f32>> {
-        self.data
+        self.inner
             .as_ref()
             .get_map_vector_float()
             .unwrap()
@@ -264,11 +278,11 @@ impl<'a> GetVariantData<HashMap<String, Vec<f32>>> for VariantData<'a, variant::
     }
 }
 
-impl<'a> GetVariantData<HashMap<String, Vec<String>>>
-    for VariantData<'a, variant::MapVectorString>
+impl<'a> TryGetFromDataContainer<HashMap<String, Vec<String>>>
+    for DataContainer<'a, data_type::MapVectorString>
 {
     fn get(&self) -> HashMap<String, Vec<String>> {
-        self.data
+        self.inner
             .as_ref()
             .get_map_vector_string()
             .unwrap()
@@ -278,9 +292,11 @@ impl<'a> GetVariantData<HashMap<String, Vec<String>>>
     }
 }
 
-impl<'a> GetVariantData<HashMap<String, Vec<i32>>> for VariantData<'a, variant::MapVectorInt> {
+impl<'a> TryGetFromDataContainer<HashMap<String, Vec<i32>>>
+    for DataContainer<'a, data_type::MapVectorInt>
+{
     fn get(&self) -> HashMap<String, Vec<i32>> {
-        self.data
+        self.inner
             .as_ref()
             .get_map_vector_int()
             .unwrap()
@@ -290,11 +306,11 @@ impl<'a> GetVariantData<HashMap<String, Vec<i32>>> for VariantData<'a, variant::
     }
 }
 
-impl<'a> GetVariantData<HashMap<String, Vec<num::Complex<f32>>>>
-    for VariantData<'a, variant::MapVectorComplex>
+impl<'a> TryGetFromDataContainer<HashMap<String, Vec<num::Complex<f32>>>>
+    for DataContainer<'a, data_type::MapVectorComplex>
 {
     fn get(&self) -> HashMap<String, Vec<num::Complex<f32>>> {
-        self.data
+        self.inner
             .as_ref()
             .get_map_vector_complex()
             .unwrap()
@@ -310,9 +326,9 @@ impl<'a> GetVariantData<HashMap<String, Vec<num::Complex<f32>>>>
 }
 
 // TODO Maybe the Pool should be take a reference to the PoolBridge?
-impl<'a> GetVariantData<Pool> for VariantData<'a, variant::Pool> {
+impl<'a> TryGetFromDataContainer<Pool> for DataContainer<'a, data_type::Pool> {
     fn get(&self) -> Pool {
-        let pool_bridge_ref = self.data.as_ref().get_pool();
+        let pool_bridge_ref = self.inner.as_ref().get_pool();
         let cloned_bridge = pool_bridge_ref.clone();
         Pool::new_from_bridge(cloned_bridge)
     }

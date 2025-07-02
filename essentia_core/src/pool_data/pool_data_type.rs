@@ -1,5 +1,6 @@
-use crate::variant_data::DataType;
 use core::fmt;
+
+use crate::data_container::DataType;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PoolDataType {

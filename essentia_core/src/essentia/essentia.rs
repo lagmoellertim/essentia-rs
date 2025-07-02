@@ -1,20 +1,15 @@
-use crate::algorithm::{Algorithm, Initialized};
+use std::{
+    collections::HashSet,
+    sync::{Arc, Mutex, Weak},
+};
 
-use crate::ffi;
-
+use essentia_sys::ffi;
 use once_cell::sync::Lazy;
-use std::collections::HashSet;
-use std::sync::{Arc, Mutex, Weak};
-use thiserror::Error;
 
-#[derive(Debug, Error)]
-pub enum CreateAlgorithmError {
-    #[error("algorithm not found: {name}")]
-    AlgorithmNotFound { name: String },
-
-    #[error("failed to create algorithm: {0}")]
-    Internal(#[from] cxx::Exception),
-}
+use crate::{
+    algorithm::{Algorithm, Initialized},
+    essentia::error::CreateAlgorithmError,
+};
 
 static GLOBAL_LIFECYCLE: Lazy<Mutex<Weak<EssentiaLifecycle>>> =
     Lazy::new(|| Mutex::new(Weak::new()));

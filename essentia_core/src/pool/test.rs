@@ -1,5 +1,5 @@
 use crate::pool::{Pool, PoolError};
-use crate::variant_data::into_other::GetVariantData;
+use crate::variant_data::get_variant_data::GetVariantData;
 use crate::variant_data::variant;
 #[test]
 fn test_new_pool_is_empty() {

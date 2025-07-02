@@ -1,5 +1,4 @@
-use crate::variant_data::DataType;
-use core::fmt;
+use crate::data_container::DataType;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ParameterType {
@@ -76,11 +75,5 @@ impl From<ParameterType> for DataType {
             ParameterType::MapFloat => DataType::MapFloat,
             ParameterType::MatrixFloat => DataType::MatrixFloat,
         }
-    }
-}
-
-impl fmt::Display for ParameterType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
     }
 }

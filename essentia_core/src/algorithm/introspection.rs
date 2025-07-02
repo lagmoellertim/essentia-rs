@@ -1,9 +1,11 @@
-use crate::{ffi, input_output::InputOutputType, parameter::ParameterType, variant_data::DataType};
-
 use std::collections::HashMap;
 
+use essentia_sys::ffi;
+
+use crate::{data_container::DataType, input_output::InputOutputType, parameter::ParameterType};
+
 #[derive(Debug, Clone)]
-pub struct AlgorithmIntrospection {
+pub struct Introspection {
     name: String,
     category: String,
     description: String,
@@ -12,7 +14,7 @@ pub struct AlgorithmIntrospection {
     parameter_infos: HashMap<String, ParameterInfo>,
 }
 
-impl AlgorithmIntrospection {
+impl Introspection {
     pub fn from_algorithm_bridge(algorithm_bridge: &ffi::AlgorithmBridge) -> Self {
         let input_info = algorithm_bridge
             .get_input_infos()

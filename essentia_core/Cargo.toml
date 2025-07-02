@@ -4,11 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-cxx = "1.0"
+cxx = "1.0.160"
+essentia-sys = { path = "../essentia_sys" }
 ndarray = "0.16.1"
 num = "0.4"
 once_cell = "1.21.3"
 thiserror = "2.0.12"
-
-[build-dependencies]
-cxx-build = "1.0"

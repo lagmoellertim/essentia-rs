@@ -1,4 +1,4 @@
-use crate::ffi;
+use essentia_sys::ffi;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DataType {

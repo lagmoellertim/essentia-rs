@@ -1,6 +1,7 @@
 use cxx::UniquePtr;
+use essentia_sys::ffi;
 
-use crate::{ffi, parameter::Parameter, variant_data::from_other::IntoVariantData};
+use crate::{data_container::IntoDataContainer, parameter::Parameter};
 
 pub struct ParameterMap {
     pub(crate) parameter_map_bridge: UniquePtr<ffi::ParameterMapBridge>,
@@ -13,12 +14,12 @@ impl ParameterMap {
         }
     }
 
-    pub fn set_parameter<T: Parameter>(&mut self, key: &str, value: impl IntoVariantData<T>) {
-        let variant_data = value.into_variant_data();
+    pub fn set_parameter<T: Parameter>(&mut self, key: &str, value: impl IntoDataContainer<T>) {
+        let data_container = value.into_data_container();
 
         self.parameter_map_bridge
             .pin_mut()
-            .add(key, variant_data.into_owned_ptr())
+            .add(key, data_container.into_owned_ptr())
             .unwrap();
     }
 }
