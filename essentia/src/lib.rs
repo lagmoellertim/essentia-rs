@@ -11,12 +11,3 @@ pub use algorithm::{Configured, Initialized};
 pub use essentia::Essentia;
 
 pub use pool::{Pool, PoolError};
-
-// Error types
-//pub use algorithm::{
-//    ComputeError, ConfigurationError, InputError, OutputError, ParameterError, ResetError,
-//};
-
-// Centralized error handling (to be enabled)
-// pub mod error;
-// pub use error::EssentiaError;
