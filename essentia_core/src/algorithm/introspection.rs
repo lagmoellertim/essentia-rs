@@ -184,7 +184,7 @@ impl ParameterInfo {
         &self.default_value
     }
     pub fn optional(&self) -> bool {
-        self.default_value != ""
+        !self.default_value.is_empty()
     }
 }
 

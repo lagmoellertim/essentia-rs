@@ -6,6 +6,12 @@ pub struct Essentia {
     inner: essentia_core::Essentia,
 }
 
+impl Default for Essentia {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Essentia {
     pub fn new() -> Self {
         Self {

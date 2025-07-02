@@ -11,6 +11,12 @@ pub struct Pool {
     inner: UniquePtr<ffi::PoolBridge>,
 }
 
+impl Default for Pool {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Pool {
     pub fn new() -> Self {
         Self {

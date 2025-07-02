@@ -7,6 +7,12 @@ pub struct ParameterMap {
     pub(crate) parameter_map_bridge: UniquePtr<ffi::ParameterMapBridge>,
 }
 
+impl Default for ParameterMap {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ParameterMap {
     pub fn new() -> Self {
         Self {

@@ -16,8 +16,8 @@ pub fn generate_output_functions(introspection: &Introspection) -> Vec<TokenStre
                 &sanitize_identifier_string(&output.name().to_case(Case::Snake))
             );
             let output_name = output.name();
-            let variant = data_type_to_phantom(&output.input_output_type().into());
-            
+            let variant = data_type_to_phantom(&output.input_output_type());
+
             let doc_comment = string_to_doc_comment(&format!(
                 "Get the `{}` output from the computation result.\n\n# Description\n\n{}",
                 output_name,

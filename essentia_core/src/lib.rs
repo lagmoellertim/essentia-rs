@@ -16,7 +16,7 @@ pub mod pool;
 // ==============================================================================
 
 // Core data types with compile-time constraints
-pub use data::{ConversionError, IntoDataContainer, GetFromDataContainer, TryIntoDataContainer};
+pub use data::{ConversionError, GetFromDataContainer, IntoDataContainer, TryIntoDataContainer};
 pub use data::{DataContainer, DataType, phantom};
 pub use data::{InputOutputData, ParameterData, PoolData};
 

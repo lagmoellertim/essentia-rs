@@ -36,6 +36,12 @@ pub struct Essentia {
     _lifecycle: Arc<EssentiaLifecycle>,
 }
 
+impl Default for Essentia {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Essentia {
     pub fn new() -> Self {
         let mut global_lifecycle = GLOBAL_LIFECYCLE

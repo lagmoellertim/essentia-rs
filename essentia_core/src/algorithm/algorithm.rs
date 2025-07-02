@@ -8,7 +8,7 @@ use crate::{
         ResetError,
     },
     data::types::HasDataType,
-    data::{DataContainer, DataType, InputOutputData, ParameterData, TryIntoDataContainer},
+    data::{DataContainer, InputOutputData, ParameterData, TryIntoDataContainer},
     essentia::Essentia,
     parameter_map::ParameterMap,
 };
@@ -73,7 +73,7 @@ impl<'a> Algorithm<'a, Initialized> {
         })?;
 
         let expected_type = T::data_type();
-        let param_data_type = DataType::from(param_info.parameter_type());
+        let param_data_type = param_info.parameter_type();
 
         if param_data_type != expected_type {
             return Err(ParameterError::TypeMismatch {
@@ -139,7 +139,7 @@ impl<'a> Algorithm<'a, Configured> {
                 })?;
 
         let expected_type = T::data_type();
-        let input_data_type = DataType::from(input_info.input_output_type());
+        let input_data_type = input_info.input_output_type();
 
         if input_data_type != expected_type {
             return Err(InputError::TypeMismatch {
@@ -172,7 +172,7 @@ impl<'a> Algorithm<'a, Configured> {
 
     pub fn compute(&mut self) -> Result<ComputeResult<'a, '_>, ComputeError> {
         for output in self.introspection.outputs() {
-            let data_type = DataType::from(output.input_output_type());
+            let data_type = output.input_output_type();
 
             self.algorithm_bridge
                 .pin_mut()
@@ -217,7 +217,7 @@ impl<'algorithm, 'result> ComputeResult<'algorithm, 'result> {
             })?;
 
         let expected_type = T::data_type();
-        let output_data_type = DataType::from(output_info.input_output_type());
+        let output_data_type = output_info.input_output_type();
 
         if output_data_type != expected_type {
             return Err(OutputError::TypeMismatch {

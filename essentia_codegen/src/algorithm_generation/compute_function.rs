@@ -37,7 +37,7 @@ pub fn generate_compute_function(
     for input in introspection.inputs() {
         let input_name = input.name().to_case(Case::Snake);
         let ident = format_ident!("{}", sanitize_identifier_string(&input_name));
-        let variant = data_type_to_phantom(&input.input_output_type().into());
+        let variant = data_type_to_phantom(&input.input_output_type());
 
         p.push(quote! { #ident: impl crate::data::TryIntoDataContainer<#variant> });
         set_statements.push(quote! {
