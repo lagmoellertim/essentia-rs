@@ -1,11 +1,12 @@
 mod algorithm_generation;
 mod module_generation;
 
-use algorithm_generation::{GeneratedAlgorithm, generate_algorithm_module_file};
-use essentia_core::essentia::Essentia;
 use std::collections::HashMap;
 use std::path::Path;
 
+use essentia_core::essentia::Essentia;
+
+use crate::algorithm_generation::{GeneratedAlgorithm, generate_algorithm_module_file};
 use crate::module_generation::category_module::generate_category_module_file;
 use crate::module_generation::main_module::generate_main_module_file;
 

@@ -332,7 +332,8 @@ impl<'a> GetFromDataContainer<HashMap<String, Vec<num::Complex<f32>>>>
     }
 }
 
-// TODO Maybe the Pool should be take a reference to the PoolBridge?
+// Note: We clone the PoolBridge to maintain clear ownership semantics.
+// This ensures the Pool can be used independently of the DataContainer's lifetime.
 impl<'a> GetFromDataContainer<Pool> for DataContainer<'a, phantom::Pool> {
     fn get(&self) -> Pool {
         let pool_bridge_ref = self.inner.as_ref().get_pool();
