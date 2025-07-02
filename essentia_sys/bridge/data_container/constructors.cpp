@@ -1,6 +1,6 @@
 #include "../pool_bridge/pool_bridge.h"
+#include "data_container.h"
 #include "essentia-sys/src/lib.rs.h"
-#include "variant_data.h"
 #include <cassert>
 #include <complex>
 #include <cstring>
@@ -16,68 +16,70 @@
 
 namespace essentia_bridge {
 
-std::unique_ptr<VariantData> create_variant_data_from_bool(bool value) {
-  return std::make_unique<VariantData>(value);
+std::unique_ptr<DataContainer> create_data_container_from_bool(bool value) {
+  return std::make_unique<DataContainer>(value);
 }
 
-std::unique_ptr<VariantData> create_variant_data_from_string(rust::Str value) {
-  return std::make_unique<VariantData>(std::string(value));
+std::unique_ptr<DataContainer>
+create_data_container_from_string(rust::Str value) {
+  return std::make_unique<DataContainer>(std::string(value));
 }
 
-std::unique_ptr<VariantData> create_variant_data_from_float(float value) {
-  return std::make_unique<VariantData>(value);
+std::unique_ptr<DataContainer> create_data_container_from_float(float value) {
+  return std::make_unique<DataContainer>(value);
 }
 
-std::unique_ptr<VariantData> create_variant_data_from_int(int value) {
-  return std::make_unique<VariantData>(value);
+std::unique_ptr<DataContainer> create_data_container_from_int(int value) {
+  return std::make_unique<DataContainer>(value);
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_unsigned_int(unsigned int value) {
-  return std::make_unique<VariantData>(value);
+std::unique_ptr<DataContainer>
+create_data_container_from_unsigned_int(unsigned int value) {
+  return std::make_unique<DataContainer>(value);
 }
 
-std::unique_ptr<VariantData> create_variant_data_from_long(std::int64_t value) {
-  return std::make_unique<VariantData>(value);
+std::unique_ptr<DataContainer>
+create_data_container_from_long(std::int64_t value) {
+  return std::make_unique<DataContainer>(value);
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_stereo_sample(StereoSample value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_stereo_sample(StereoSample value) {
   essentia::StereoSample sample;
   sample.first = value.left;
   sample.second = value.right;
-  return std::make_unique<VariantData>(sample);
+  return std::make_unique<DataContainer>(sample);
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_bool(rust::Slice<const bool> value) {
-  return std::make_unique<VariantData>(
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_bool(rust::Slice<const bool> value) {
+  return std::make_unique<DataContainer>(
       std::vector<bool>(value.begin(), value.end()));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_int(rust::Slice<const int> value) {
-  return std::make_unique<VariantData>(
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_int(rust::Slice<const int> value) {
+  return std::make_unique<DataContainer>(
       std::vector<int>(value.begin(), value.end()));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_string(rust::Slice<const rust::Str> value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_string(rust::Slice<const rust::Str> value) {
   std::vector<std::string> cpp_vec;
   cpp_vec.reserve(value.size());
   for (const auto &str : value) {
     cpp_vec.push_back(std::string(str));
   }
-  return std::make_unique<VariantData>(std::move(cpp_vec));
+  return std::make_unique<DataContainer>(std::move(cpp_vec));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_float(rust::Slice<const float> value) {
-  return std::make_unique<VariantData>(
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_float(rust::Slice<const float> value) {
+  return std::make_unique<DataContainer>(
       std::vector<float>(value.begin(), value.end()));
 }
 
-std::unique_ptr<VariantData> create_variant_data_from_vector_stereo_sample(
+std::unique_ptr<DataContainer> create_data_container_from_vector_stereo_sample(
     rust::Slice<const StereoSample> value) {
   std::vector<essentia::StereoSample> cpp_vec;
   cpp_vec.resize(value.size());
@@ -94,11 +96,11 @@ std::unique_ptr<VariantData> create_variant_data_from_vector_stereo_sample(
                 value.size() * sizeof(StereoSample));
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_vec));
+  return std::make_unique<DataContainer>(std::move(cpp_vec));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_vector_float(rust::Vec<SliceFloat> value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_vector_float(rust::Vec<SliceFloat> value) {
   std::vector<std::vector<float>> cpp_vec;
   cpp_vec.reserve(value.size());
 
@@ -108,20 +110,20 @@ create_variant_data_from_vector_vector_float(rust::Vec<SliceFloat> value) {
     cpp_vec.push_back(std::vector<float>(data, data + size));
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_vec));
+  return std::make_unique<DataContainer>(std::move(cpp_vec));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_matrix_float(MatrixFloat value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_matrix_float(MatrixFloat value) {
   assert(value.slice.size() == value.dim1 * value.dim2);
   TNT::Array2D<float> array(value.dim1, value.dim2);
   std::memcpy(&array[0][0], value.slice.data(),
               value.slice.size() * sizeof(float));
-  return std::make_unique<VariantData>(std::move(array));
+  return std::make_unique<DataContainer>(std::move(array));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_tensor_float(TensorFloat value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_tensor_float(TensorFloat value) {
   // Essentia requires all tensors to be exactly 4D (TENSORRANK = 4)
   if (value.shape.size() != 4) {
     throw std::invalid_argument("Tensor must be exactly 4-dimensional. Got " +
@@ -149,11 +151,11 @@ create_variant_data_from_tensor_float(TensorFloat value) {
   std::memcpy(tensor.data(), value.slice.data(),
               value.slice.size() * sizeof(float));
 
-  return std::make_unique<VariantData>(std::move(tensor));
+  return std::make_unique<DataContainer>(std::move(tensor));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_vector_string(rust::Vec<VecString> value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_vector_string(rust::Vec<VecString> value) {
   std::vector<std::vector<std::string>> cpp_vec;
   cpp_vec.reserve(value.size());
 
@@ -166,11 +168,11 @@ create_variant_data_from_vector_vector_string(rust::Vec<VecString> value) {
     cpp_vec.push_back(std::move(inner_vec));
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_vec));
+  return std::make_unique<DataContainer>(std::move(cpp_vec));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_vector_stereo_sample(
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_vector_stereo_sample(
     rust::Vec<SliceStereoSample> value) {
   std::vector<std::vector<essentia::StereoSample>> cpp_vec;
   cpp_vec.reserve(value.size());
@@ -194,11 +196,11 @@ create_variant_data_from_vector_vector_stereo_sample(
     cpp_vec.push_back(std::move(inner_vec));
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_vec));
+  return std::make_unique<DataContainer>(std::move(cpp_vec));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_matrix_float(rust::Vec<MatrixFloat> value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_matrix_float(rust::Vec<MatrixFloat> value) {
   std::vector<TNT::Array2D<float>> cpp_vec;
   cpp_vec.reserve(value.size());
 
@@ -210,10 +212,10 @@ create_variant_data_from_vector_matrix_float(rust::Vec<MatrixFloat> value) {
     cpp_vec.push_back(std::move(array));
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_vec));
+  return std::make_unique<DataContainer>(std::move(cpp_vec));
 }
 
-std::unique_ptr<VariantData> create_variant_data_from_map_vector_float(
+std::unique_ptr<DataContainer> create_data_container_from_map_vector_float(
     rust::Vec<MapEntryVectorFloat> value) {
   std::map<std::string, std::vector<float>> cpp_map;
 
@@ -224,10 +226,10 @@ std::unique_ptr<VariantData> create_variant_data_from_map_vector_float(
     cpp_map[key] = std::vector<float>(data, data + size);
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_map));
+  return std::make_unique<DataContainer>(std::move(cpp_map));
 }
 
-std::unique_ptr<VariantData> create_variant_data_from_map_vector_string(
+std::unique_ptr<DataContainer> create_data_container_from_map_vector_string(
     rust::Vec<MapEntryVectorString> value) {
   std::map<std::string, std::vector<std::string>> cpp_map;
 
@@ -241,11 +243,11 @@ std::unique_ptr<VariantData> create_variant_data_from_map_vector_string(
     cpp_map[key] = std::move(values);
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_map));
+  return std::make_unique<DataContainer>(std::move(cpp_map));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_map_vector_int(rust::Vec<MapEntryVectorInt> value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_map_vector_int(rust::Vec<MapEntryVectorInt> value) {
   std::map<std::string, std::vector<int>> cpp_map;
 
   for (const auto &entry : value) {
@@ -255,10 +257,10 @@ create_variant_data_from_map_vector_int(rust::Vec<MapEntryVectorInt> value) {
     cpp_map[key] = std::vector<int>(data, data + size);
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_map));
+  return std::make_unique<DataContainer>(std::move(cpp_map));
 }
 
-std::unique_ptr<VariantData> create_variant_data_from_map_vector_complex(
+std::unique_ptr<DataContainer> create_data_container_from_map_vector_complex(
     rust::Vec<MapEntryVectorComplex> value) {
   std::map<std::string, std::vector<std::complex<essentia::Real>>> cpp_map;
 
@@ -282,27 +284,28 @@ std::unique_ptr<VariantData> create_variant_data_from_map_vector_complex(
     cpp_map[key] = std::move(values);
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_map));
+  return std::make_unique<DataContainer>(std::move(cpp_map));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_map_float(rust::Vec<MapEntryFloat> value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_map_float(rust::Vec<MapEntryFloat> value) {
   std::map<std::string, float> cpp_map;
 
   for (const auto &entry : value) {
     cpp_map[std::string(entry.key)] = entry.value;
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_map));
+  return std::make_unique<DataContainer>(std::move(cpp_map));
 }
 
-std::unique_ptr<VariantData> create_variant_data_from_complex(Complex value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_complex(Complex value) {
   std::complex<essentia::Real> complex_val(value.real, value.imag);
-  return std::make_unique<VariantData>(complex_val);
+  return std::make_unique<DataContainer>(complex_val);
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_complex(rust::Slice<const Complex> value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_complex(rust::Slice<const Complex> value) {
   std::vector<std::complex<essentia::Real>> cpp_vec;
   cpp_vec.resize(value.size());
 
@@ -317,11 +320,11 @@ create_variant_data_from_vector_complex(rust::Slice<const Complex> value) {
     std::memcpy(cpp_vec.data(), value.data(), value.size() * sizeof(Complex));
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_vec));
+  return std::make_unique<DataContainer>(std::move(cpp_vec));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_vector_complex(rust::Vec<VecComplex> value) {
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_vector_complex(rust::Vec<VecComplex> value) {
   std::vector<std::vector<std::complex<essentia::Real>>> cpp_vec;
   cpp_vec.reserve(value.size());
 
@@ -344,13 +347,13 @@ create_variant_data_from_vector_vector_complex(rust::Vec<VecComplex> value) {
     cpp_vec.push_back(std::move(inner_vec));
   }
 
-  return std::make_unique<VariantData>(std::move(cpp_vec));
+  return std::make_unique<DataContainer>(std::move(cpp_vec));
 }
 
-std::unique_ptr<VariantData>
-create_variant_data_from_pool(std::unique_ptr<PoolBridge> pool_bridge) {
+std::unique_ptr<DataContainer>
+create_data_container_from_pool(std::unique_ptr<PoolBridge> pool_bridge) {
   essentia::Pool pool = pool_bridge->into_pool();
-  return std::make_unique<VariantData>(std::move(pool));
+  return std::make_unique<DataContainer>(std::move(pool));
 }
 
 } // namespace essentia_bridge

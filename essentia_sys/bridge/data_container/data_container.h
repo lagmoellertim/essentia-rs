@@ -31,7 +31,7 @@ struct MapEntryVectorComplex;
 struct MapEntryFloat;
 class PoolBridge;
 
-struct VariantData {
+struct DataContainer {
   using StorageType = std::variant<
       bool, std::string, float, int, unsigned int, std::int64_t,
       essentia::StereoSample, std::complex<essentia::Real>, std::vector<bool>,
@@ -52,15 +52,15 @@ struct VariantData {
 
   mutable std::unique_ptr<PoolBridge> pool_bridge_cache;
 
-  VariantData();
-  ~VariantData();
-  VariantData(const VariantData &other);
-  VariantData &operator=(const VariantData &other);
-  VariantData(VariantData &&other) noexcept;
-  VariantData &operator=(VariantData &&other) noexcept;
+  DataContainer();
+  ~DataContainer();
+  DataContainer(const DataContainer &other);
+  DataContainer &operator=(const DataContainer &other);
+  DataContainer(DataContainer &&other) noexcept;
+  DataContainer &operator=(DataContainer &&other) noexcept;
 
   template <typename T>
-  explicit VariantData(T &&value) : data(std::forward<T>(value)) {}
+  explicit DataContainer(T &&value) : data(std::forward<T>(value)) {}
 
 public:
   DataType get_data_type() const;
@@ -94,54 +94,57 @@ public:
   const PoolBridge &get_pool() const;
 };
 
-std::unique_ptr<VariantData> create_variant_data_from_bool(bool value);
-std::unique_ptr<VariantData> create_variant_data_from_string(rust::Str value);
-std::unique_ptr<VariantData> create_variant_data_from_float(float value);
-std::unique_ptr<VariantData> create_variant_data_from_int(int value);
-std::unique_ptr<VariantData>
-create_variant_data_from_unsigned_int(unsigned int value);
-std::unique_ptr<VariantData> create_variant_data_from_long(std::int64_t value);
-std::unique_ptr<VariantData>
-create_variant_data_from_stereo_sample(StereoSample value);
-std::unique_ptr<VariantData> create_variant_data_from_complex(Complex value);
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_bool(rust::Slice<const bool> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_int(rust::Slice<const int> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_string(rust::Slice<const rust::Str> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_float(rust::Slice<const float> value);
-std::unique_ptr<VariantData> create_variant_data_from_vector_stereo_sample(
+std::unique_ptr<DataContainer> create_data_container_from_bool(bool value);
+std::unique_ptr<DataContainer>
+create_data_container_from_string(rust::Str value);
+std::unique_ptr<DataContainer> create_data_container_from_float(float value);
+std::unique_ptr<DataContainer> create_data_container_from_int(int value);
+std::unique_ptr<DataContainer>
+create_data_container_from_unsigned_int(unsigned int value);
+std::unique_ptr<DataContainer>
+create_data_container_from_long(std::int64_t value);
+std::unique_ptr<DataContainer>
+create_data_container_from_stereo_sample(StereoSample value);
+std::unique_ptr<DataContainer>
+create_data_container_from_complex(Complex value);
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_bool(rust::Slice<const bool> value);
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_int(rust::Slice<const int> value);
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_string(rust::Slice<const rust::Str> value);
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_float(rust::Slice<const float> value);
+std::unique_ptr<DataContainer> create_data_container_from_vector_stereo_sample(
     rust::Slice<const StereoSample> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_complex(rust::Slice<const Complex> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_vector_float(rust::Vec<SliceFloat> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_matrix_float(MatrixFloat value);
-std::unique_ptr<VariantData>
-create_variant_data_from_tensor_float(TensorFloat value);
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_vector_string(rust::Vec<VecString> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_vector_stereo_sample(
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_complex(rust::Slice<const Complex> value);
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_vector_float(rust::Vec<SliceFloat> value);
+std::unique_ptr<DataContainer>
+create_data_container_from_matrix_float(MatrixFloat value);
+std::unique_ptr<DataContainer>
+create_data_container_from_tensor_float(TensorFloat value);
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_vector_string(rust::Vec<VecString> value);
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_vector_stereo_sample(
     rust::Vec<SliceStereoSample> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_vector_complex(rust::Vec<VecComplex> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_vector_matrix_float(rust::Vec<MatrixFloat> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_map_vector_float(rust::Vec<MapEntryVectorFloat> value);
-std::unique_ptr<VariantData> create_variant_data_from_map_vector_string(
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_vector_complex(rust::Vec<VecComplex> value);
+std::unique_ptr<DataContainer>
+create_data_container_from_vector_matrix_float(rust::Vec<MatrixFloat> value);
+std::unique_ptr<DataContainer> create_data_container_from_map_vector_float(
+    rust::Vec<MapEntryVectorFloat> value);
+std::unique_ptr<DataContainer> create_data_container_from_map_vector_string(
     rust::Vec<MapEntryVectorString> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_map_vector_int(rust::Vec<MapEntryVectorInt> value);
-std::unique_ptr<VariantData> create_variant_data_from_map_vector_complex(
+std::unique_ptr<DataContainer>
+create_data_container_from_map_vector_int(rust::Vec<MapEntryVectorInt> value);
+std::unique_ptr<DataContainer> create_data_container_from_map_vector_complex(
     rust::Vec<MapEntryVectorComplex> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_map_float(rust::Vec<MapEntryFloat> value);
-std::unique_ptr<VariantData>
-create_variant_data_from_pool(std::unique_ptr<PoolBridge> pool_bridge);
+std::unique_ptr<DataContainer>
+create_data_container_from_map_float(rust::Vec<MapEntryFloat> value);
+std::unique_ptr<DataContainer>
+create_data_container_from_pool(std::unique_ptr<PoolBridge> pool_bridge);
 
 } // namespace essentia_bridge

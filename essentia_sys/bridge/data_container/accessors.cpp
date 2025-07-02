@@ -1,6 +1,6 @@
 #include "../pool_bridge/pool_bridge.h"
+#include "data_container.h"
 #include "essentia-sys/src/lib.rs.h"
-#include "variant_data.h"
 #include <complex>
 #include <cstring>
 #include <essentia/pool.h>
@@ -13,12 +13,12 @@
 
 namespace essentia_bridge {
 
-VariantData::VariantData() = default;
-VariantData::~VariantData() = default;
+DataContainer::DataContainer() = default;
+DataContainer::~DataContainer() = default;
 
-VariantData::VariantData(const VariantData &other) : data(other.data) {}
+DataContainer::DataContainer(const DataContainer &other) : data(other.data) {}
 
-VariantData &VariantData::operator=(const VariantData &other) {
+DataContainer &DataContainer::operator=(const DataContainer &other) {
   if (this != &other) {
     data = other.data;
     pool_bridge_cache.reset();
@@ -26,40 +26,41 @@ VariantData &VariantData::operator=(const VariantData &other) {
   return *this;
 }
 
-VariantData::VariantData(VariantData &&other) noexcept = default;
+DataContainer::DataContainer(DataContainer &&other) noexcept = default;
 
-VariantData &VariantData::operator=(VariantData &&other) noexcept = default;
+DataContainer &
+DataContainer::operator=(DataContainer &&other) noexcept = default;
 
-bool VariantData::get_bool() const { return std::get<bool>(data); }
+bool DataContainer::get_bool() const { return std::get<bool>(data); }
 
-rust::String VariantData::get_string() const {
+rust::String DataContainer::get_string() const {
   return rust::String(std::get<std::string>(data));
 }
 
-float VariantData::get_float() const { return std::get<float>(data); }
+float DataContainer::get_float() const { return std::get<float>(data); }
 
-int VariantData::get_int() const { return std::get<int>(data); }
+int DataContainer::get_int() const { return std::get<int>(data); }
 
-unsigned int VariantData::get_unsigned_int() const {
+unsigned int DataContainer::get_unsigned_int() const {
   return std::get<unsigned int>(data);
 }
 
-std::int64_t VariantData::get_long() const {
+std::int64_t DataContainer::get_long() const {
   return std::get<std::int64_t>(data);
 }
 
-StereoSample VariantData::get_stereo_sample() const {
+StereoSample DataContainer::get_stereo_sample() const {
   const essentia::StereoSample &sample = std::get<essentia::StereoSample>(data);
   return StereoSample{sample.first, sample.second};
 }
 
-Complex VariantData::get_complex() const {
+Complex DataContainer::get_complex() const {
   const std::complex<essentia::Real> &complex_val =
       std::get<std::complex<essentia::Real>>(data);
   return Complex{complex_val.real(), complex_val.imag()};
 }
 
-rust::Vec<bool> VariantData::get_vector_bool() const {
+rust::Vec<bool> DataContainer::get_vector_bool() const {
   const std::vector<bool> &vec = std::get<std::vector<bool>>(data);
   rust::Vec<bool> result;
   result.reserve(vec.size());
@@ -69,12 +70,12 @@ rust::Vec<bool> VariantData::get_vector_bool() const {
   return result;
 }
 
-rust::Slice<const int> VariantData::get_vector_int() const {
+rust::Slice<const int> DataContainer::get_vector_int() const {
   const std::vector<int> &vec = std::get<std::vector<int>>(data);
   return rust::Slice<const int>(vec.data(), vec.size());
 }
 
-rust::Vec<rust::String> VariantData::get_vector_string() const {
+rust::Vec<rust::String> DataContainer::get_vector_string() const {
   const std::vector<std::string> &vec =
       std::get<std::vector<std::string>>(data);
   rust::Vec<rust::String> result;
@@ -85,14 +86,15 @@ rust::Vec<rust::String> VariantData::get_vector_string() const {
   return result;
 }
 
-rust::Slice<const float> VariantData::get_vector_float() const {
+rust::Slice<const float> DataContainer::get_vector_float() const {
   const std::vector<float> &vec = std::get<std::vector<float>>(data);
   rust::Slice<const float> slice{vec.data(), vec.size()};
 
   return slice;
 }
 
-rust::Slice<const StereoSample> VariantData::get_vector_stereo_sample() const {
+rust::Slice<const StereoSample>
+DataContainer::get_vector_stereo_sample() const {
   const auto &vec = std::get<std::vector<essentia::StereoSample>>(data);
 
   static_assert(sizeof(StereoSample) == sizeof(essentia::StereoSample),
@@ -106,7 +108,7 @@ rust::Slice<const StereoSample> VariantData::get_vector_stereo_sample() const {
       reinterpret_cast<const StereoSample *>(vec.data()), vec.size());
 }
 
-rust::Slice<const Complex> VariantData::get_vector_complex() const {
+rust::Slice<const Complex> DataContainer::get_vector_complex() const {
   const auto &vec = std::get<std::vector<std::complex<essentia::Real>>>(data);
 
   static_assert(sizeof(Complex) == sizeof(std::complex<essentia::Real>),
@@ -120,7 +122,7 @@ rust::Slice<const Complex> VariantData::get_vector_complex() const {
       reinterpret_cast<const Complex *>(vec.data()), vec.size());
 }
 
-rust::Vec<SliceFloat> VariantData::get_vector_vector_float() const {
+rust::Vec<SliceFloat> DataContainer::get_vector_vector_float() const {
   const auto &vec = std::get<std::vector<std::vector<float>>>(data);
 
   rust::Vec<SliceFloat> rust_vec;
@@ -135,7 +137,7 @@ rust::Vec<SliceFloat> VariantData::get_vector_vector_float() const {
   return rust_vec;
 }
 
-MatrixFloat VariantData::get_matrix_float() const {
+MatrixFloat DataContainer::get_matrix_float() const {
   const auto &matrix = std::get<TNT::Array2D<float>>(data);
 
   MatrixFloat rust_matrix;
@@ -150,7 +152,7 @@ MatrixFloat VariantData::get_matrix_float() const {
   return rust_matrix;
 }
 
-TensorFloat VariantData::get_tensor_float() const {
+TensorFloat DataContainer::get_tensor_float() const {
   const auto &tensor = std::get<essentia::Tensor<essentia::Real>>(data);
 
   TensorFloat rust_tensor;
@@ -169,7 +171,7 @@ TensorFloat VariantData::get_tensor_float() const {
   return rust_tensor;
 }
 
-rust::Vec<VecString> VariantData::get_vector_vector_string() const {
+rust::Vec<VecString> DataContainer::get_vector_vector_string() const {
   const auto &vec = std::get<std::vector<std::vector<std::string>>>(data);
 
   rust::Vec<VecString> rust_vec;
@@ -189,7 +191,7 @@ rust::Vec<VecString> VariantData::get_vector_vector_string() const {
 }
 
 rust::Vec<SliceStereoSample>
-VariantData::get_vector_vector_stereo_sample() const {
+DataContainer::get_vector_vector_stereo_sample() const {
   const auto &vec =
       std::get<std::vector<std::vector<essentia::StereoSample>>>(data);
 
@@ -214,7 +216,7 @@ VariantData::get_vector_vector_stereo_sample() const {
   return rust_vec;
 }
 
-rust::Vec<MatrixFloat> VariantData::get_vector_matrix_float() const {
+rust::Vec<MatrixFloat> DataContainer::get_vector_matrix_float() const {
   const auto &vec = std::get<std::vector<TNT::Array2D<float>>>(data);
 
   rust::Vec<MatrixFloat> rust_vec;
@@ -236,7 +238,7 @@ rust::Vec<MatrixFloat> VariantData::get_vector_matrix_float() const {
   return rust_vec;
 }
 
-rust::Vec<MapEntryVectorFloat> VariantData::get_map_vector_float() const {
+rust::Vec<MapEntryVectorFloat> DataContainer::get_map_vector_float() const {
   const auto &map = std::get<std::map<std::string, std::vector<float>>>(data);
 
   rust::Vec<MapEntryVectorFloat> rust_vec;
@@ -252,7 +254,7 @@ rust::Vec<MapEntryVectorFloat> VariantData::get_map_vector_float() const {
   return rust_vec;
 }
 
-rust::Vec<MapEntryVectorString> VariantData::get_map_vector_string() const {
+rust::Vec<MapEntryVectorString> DataContainer::get_map_vector_string() const {
   const auto &map =
       std::get<std::map<std::string, std::vector<std::string>>>(data);
 
@@ -273,7 +275,7 @@ rust::Vec<MapEntryVectorString> VariantData::get_map_vector_string() const {
   return rust_vec;
 }
 
-rust::Vec<MapEntryVectorInt> VariantData::get_map_vector_int() const {
+rust::Vec<MapEntryVectorInt> DataContainer::get_map_vector_int() const {
   const auto &map = std::get<std::map<std::string, std::vector<int>>>(data);
 
   rust::Vec<MapEntryVectorInt> rust_vec;
@@ -289,7 +291,7 @@ rust::Vec<MapEntryVectorInt> VariantData::get_map_vector_int() const {
   return rust_vec;
 }
 
-rust::Vec<MapEntryVectorComplex> VariantData::get_map_vector_complex() const {
+rust::Vec<MapEntryVectorComplex> DataContainer::get_map_vector_complex() const {
   const auto &map = std::get<
       std::map<std::string, std::vector<std::complex<essentia::Real>>>>(data);
 
@@ -315,7 +317,7 @@ rust::Vec<MapEntryVectorComplex> VariantData::get_map_vector_complex() const {
   return rust_vec;
 }
 
-rust::Vec<MapEntryFloat> VariantData::get_map_float() const {
+rust::Vec<MapEntryFloat> DataContainer::get_map_float() const {
   const std::map<std::string, float> &map_data =
       std::get<std::map<std::string, float>>(data);
   rust::Vec<MapEntryFloat> result;
@@ -328,7 +330,7 @@ rust::Vec<MapEntryFloat> VariantData::get_map_float() const {
   return result;
 }
 
-const PoolBridge &VariantData::get_pool() const {
+const PoolBridge &DataContainer::get_pool() const {
   if (!pool_bridge_cache) {
     const auto &pool = std::get<essentia::Pool>(data);
     pool_bridge_cache =
@@ -337,7 +339,7 @@ const PoolBridge &VariantData::get_pool() const {
   return *pool_bridge_cache;
 }
 
-rust::Vec<VecComplex> VariantData::get_vector_vector_complex() const {
+rust::Vec<VecComplex> DataContainer::get_vector_vector_complex() const {
   const auto &vec =
       std::get<std::vector<std::vector<std::complex<essentia::Real>>>>(data);
 

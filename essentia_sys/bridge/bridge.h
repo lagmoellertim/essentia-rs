@@ -1,10 +1,10 @@
 #pragma once
 
 #include "algorithm_bridge/algorithm_bridge.h"
+#include "data_container/data_container.h"
 #include "parameter_map_bridge/parameter_map_bridge.h"
 #include "pool_bridge/pool_bridge.h"
 #include "rust/cxx.h"
-#include "variant_data/variant_data.h"
 #include <essentia/algorithm.h>
 #include <essentia/utils/tnt/tnt_array2d.h>
 #include <memory>

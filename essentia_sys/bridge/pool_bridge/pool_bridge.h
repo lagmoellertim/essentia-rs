@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../variant_data/variant_data.h"
+#include "../data_container/data_container.h"
 #include <essentia/pool.h>
 #include <rust/cxx.h>
 #include <vector>
@@ -8,7 +8,7 @@
 namespace essentia_bridge {
 struct StereoSample;
 
-struct VariantData;
+struct DataContainer;
 enum class DataType : std::uint8_t;
 
 class PoolBridge {
@@ -21,8 +21,8 @@ public:
 
   std::unique_ptr<PoolBridge> clone() const;
 
-  void set(rust::Str key, std::unique_ptr<VariantData> variant_data);
-  std::unique_ptr<VariantData> get(rust::Str key) const;
+  void set(rust::Str key, std::unique_ptr<DataContainer> data_container);
+  std::unique_ptr<DataContainer> get(rust::Str key) const;
   bool contains(rust::Str key) const;
   rust::Vec<rust::String> keys() const;
 

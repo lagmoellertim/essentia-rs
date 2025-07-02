@@ -10,7 +10,7 @@ ParameterMapBridge::ParameterMapBridge() {
 ParameterMapBridge::~ParameterMapBridge() { delete _parameter_map; }
 
 void ParameterMapBridge::add(rust::Str key,
-                             std::unique_ptr<VariantData> variant_data) {
+                             std::unique_ptr<DataContainer> data_container) {
   std::string str_key(key);
 
   struct Visitor {
@@ -99,7 +99,7 @@ void ParameterMapBridge::add(rust::Str key,
     }
   };
 
-  std::visit(Visitor{_parameter_map, str_key}, variant_data->data);
+  std::visit(Visitor{_parameter_map, str_key}, data_container->data);
 }
 
 std::unique_ptr<ParameterMapBridge> create_parameter_map_bridge() {

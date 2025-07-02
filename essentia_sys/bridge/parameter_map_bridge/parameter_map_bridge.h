@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../variant_data/variant_data.h"
+#include "../data_container/data_container.h"
 #include <essentia/parameter.h>
 #include <rust/cxx.h>
 
@@ -11,7 +11,7 @@ public:
   ParameterMapBridge();
   ~ParameterMapBridge();
 
-  void add(rust::Str key, std::unique_ptr<VariantData> variant_data);
+  void add(rust::Str key, std::unique_ptr<DataContainer> data_container);
 
   essentia::ParameterMap get_parameter_map();
 

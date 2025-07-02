@@ -5,10 +5,10 @@
 namespace essentia_bridge {
 
 void AlgorithmBridge::set_input(rust::Str input_name,
-                                std::unique_ptr<VariantData> variant_data) {
+                                std::unique_ptr<DataContainer> data_container) {
   std::string key(input_name);
 
-  auto &input = _inputs[key] = std::move(*variant_data);
+  auto &input = _inputs[key] = std::move(*data_container);
 
   std::visit([&](auto &value) { _algorithm->input(key).set(value); },
              input.data);
@@ -109,7 +109,7 @@ void AlgorithmBridge::setup_output(rust::Str output_name, DataType data_type) {
   }
 }
 
-const VariantData &AlgorithmBridge::get_output(rust::Str output_name) const {
+const DataContainer &AlgorithmBridge::get_output(rust::Str output_name) const {
   return _outputs.at(std::string(output_name));
 }
 

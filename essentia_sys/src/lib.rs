@@ -121,7 +121,7 @@ pub mod ffi {
         pub type AlgorithmBridge;
         pub type ParameterMapBridge;
         pub type PoolBridge;
-        pub type VariantData;
+        pub type DataContainer;
 
         // ===== Essentia Initialization =====
         pub fn init_essentia();
@@ -151,118 +151,124 @@ pub mod ffi {
         pub fn set_input(
             self: Pin<&mut AlgorithmBridge>,
             input_name: &str,
-            variant_data: UniquePtr<VariantData>,
+            data_container: UniquePtr<DataContainer>,
         ) -> Result<()>;
         pub fn setup_output(
             self: Pin<&mut AlgorithmBridge>,
             output_name: &str,
             data_type: DataType,
         ) -> Result<()>;
-        pub fn get_output(self: &AlgorithmBridge, output_name: &str) -> Result<&VariantData>;
+        pub fn get_output(self: &AlgorithmBridge, output_name: &str) -> Result<&DataContainer>;
 
-        // ===== Variant Data Constructors =====
-        pub fn create_variant_data_from_bool(value: bool) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_string(value: &str) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_float(value: f32) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_int(value: i32) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_unsigned_int(value: u32) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_long(value: i64) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_stereo_sample(
+        // ===== Data Container Constructors =====
+        pub fn create_data_container_from_bool(value: bool) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_string(value: &str) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_float(value: f32) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_int(value: i32) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_unsigned_int(value: u32) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_long(value: i64) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_stereo_sample(
             value: StereoSample,
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_complex(value: Complex) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_vector_bool(value: &[bool]) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_vector_int(value: &[i32]) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_vector_string(value: &[&str]) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_vector_float(value: &[f32]) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_vector_stereo_sample(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_complex(value: Complex) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_vector_bool(value: &[bool]) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_vector_int(value: &[i32]) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_vector_string(value: &[&str])
+        -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_vector_float(value: &[f32]) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_vector_stereo_sample(
             value: &[StereoSample],
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_vector_complex(value: &[Complex])
-        -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_vector_vector_float(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_vector_complex(
+            value: &[Complex],
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_vector_vector_float(
             value: Vec<SliceFloat>,
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_matrix_float(value: MatrixFloat) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_tensor_float(value: TensorFloat) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_vector_vector_string(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_matrix_float(
+            value: MatrixFloat,
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_tensor_float(
+            value: TensorFloat,
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_vector_vector_string(
             value: Vec<VecString>,
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_vector_vector_stereo_sample(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_vector_vector_stereo_sample(
             value: Vec<SliceStereoSample>,
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_vector_vector_complex(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_vector_vector_complex(
             value: Vec<VecComplex>,
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_vector_matrix_float(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_vector_matrix_float(
             value: Vec<MatrixFloat>,
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_map_vector_float(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_map_vector_float(
             value: Vec<MapEntryVectorFloat>,
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_map_vector_string(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_map_vector_string(
             value: Vec<MapEntryVectorString>,
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_map_vector_int(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_map_vector_int(
             value: Vec<MapEntryVectorInt>,
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_map_vector_complex(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_map_vector_complex(
             value: Vec<MapEntryVectorComplex>,
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_map_float(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_map_float(
             value: Vec<MapEntryFloat>,
-        ) -> UniquePtr<VariantData>;
-        pub fn create_variant_data_from_pool(
+        ) -> UniquePtr<DataContainer>;
+        pub fn create_data_container_from_pool(
             value: UniquePtr<PoolBridge>,
-        ) -> UniquePtr<VariantData>;
+        ) -> UniquePtr<DataContainer>;
 
-        // ===== Variant Data Introspection =====
-        pub fn get_data_type(self: &VariantData) -> DataType;
+        // ===== Data Container Introspection =====
+        pub fn get_data_type(self: &DataContainer) -> DataType;
 
-        // ===== Variant Data Accessors =====
-        pub fn get_bool(self: &VariantData) -> Result<bool>;
-        pub fn get_string(self: &VariantData) -> Result<String>;
-        pub fn get_float(self: &VariantData) -> Result<f32>;
-        pub fn get_int(self: &VariantData) -> Result<i32>;
-        pub fn get_unsigned_int(self: &VariantData) -> Result<u32>;
-        pub fn get_long(self: &VariantData) -> Result<i64>;
-        pub fn get_stereo_sample(self: &VariantData) -> Result<StereoSample>;
-        pub fn get_complex(self: &VariantData) -> Result<Complex>;
-        pub fn get_vector_bool(self: &VariantData) -> Result<Vec<bool>>;
-        pub fn get_vector_int(self: &VariantData) -> Result<&[i32]>;
-        pub fn get_vector_string(self: &VariantData) -> Result<Vec<String>>;
-        pub fn get_vector_float(self: &VariantData) -> Result<&[f32]>;
-        pub fn get_vector_stereo_sample(self: &VariantData) -> Result<&[StereoSample]>;
-        pub fn get_vector_complex(self: &VariantData) -> Result<&[Complex]>;
-        pub fn get_vector_vector_float(self: &VariantData) -> Result<Vec<SliceFloat>>;
-        pub fn get_matrix_float(self: &VariantData) -> Result<MatrixFloat>;
-        pub fn get_tensor_float(self: &VariantData) -> Result<TensorFloat>;
-        pub fn get_vector_vector_string(self: &VariantData) -> Result<Vec<VecString>>;
+        // ===== Data Container Accessors =====
+        pub fn get_bool(self: &DataContainer) -> Result<bool>;
+        pub fn get_string(self: &DataContainer) -> Result<String>;
+        pub fn get_float(self: &DataContainer) -> Result<f32>;
+        pub fn get_int(self: &DataContainer) -> Result<i32>;
+        pub fn get_unsigned_int(self: &DataContainer) -> Result<u32>;
+        pub fn get_long(self: &DataContainer) -> Result<i64>;
+        pub fn get_stereo_sample(self: &DataContainer) -> Result<StereoSample>;
+        pub fn get_complex(self: &DataContainer) -> Result<Complex>;
+        pub fn get_vector_bool(self: &DataContainer) -> Result<Vec<bool>>;
+        pub fn get_vector_int(self: &DataContainer) -> Result<&[i32]>;
+        pub fn get_vector_string(self: &DataContainer) -> Result<Vec<String>>;
+        pub fn get_vector_float(self: &DataContainer) -> Result<&[f32]>;
+        pub fn get_vector_stereo_sample(self: &DataContainer) -> Result<&[StereoSample]>;
+        pub fn get_vector_complex(self: &DataContainer) -> Result<&[Complex]>;
+        pub fn get_vector_vector_float(self: &DataContainer) -> Result<Vec<SliceFloat>>;
+        pub fn get_matrix_float(self: &DataContainer) -> Result<MatrixFloat>;
+        pub fn get_tensor_float(self: &DataContainer) -> Result<TensorFloat>;
+        pub fn get_vector_vector_string(self: &DataContainer) -> Result<Vec<VecString>>;
         pub fn get_vector_vector_stereo_sample(
-            self: &VariantData,
+            self: &DataContainer,
         ) -> Result<Vec<SliceStereoSample>>;
-        pub fn get_vector_vector_complex(self: &VariantData) -> Result<Vec<VecComplex>>;
-        pub fn get_vector_matrix_float(self: &VariantData) -> Result<Vec<MatrixFloat>>;
-        pub fn get_map_vector_float(self: &VariantData) -> Result<Vec<MapEntryVectorFloat>>;
-        pub fn get_map_vector_string(self: &VariantData) -> Result<Vec<MapEntryVectorString>>;
-        pub fn get_map_vector_int(self: &VariantData) -> Result<Vec<MapEntryVectorInt>>;
-        pub fn get_map_vector_complex(self: &VariantData) -> Result<Vec<MapEntryVectorComplex>>;
-        pub fn get_map_float(self: &VariantData) -> Result<Vec<MapEntryFloat>>;
-        pub fn get_pool(self: &VariantData) -> &PoolBridge;
+        pub fn get_vector_vector_complex(self: &DataContainer) -> Result<Vec<VecComplex>>;
+        pub fn get_vector_matrix_float(self: &DataContainer) -> Result<Vec<MatrixFloat>>;
+        pub fn get_map_vector_float(self: &DataContainer) -> Result<Vec<MapEntryVectorFloat>>;
+        pub fn get_map_vector_string(self: &DataContainer) -> Result<Vec<MapEntryVectorString>>;
+        pub fn get_map_vector_int(self: &DataContainer) -> Result<Vec<MapEntryVectorInt>>;
+        pub fn get_map_vector_complex(self: &DataContainer) -> Result<Vec<MapEntryVectorComplex>>;
+        pub fn get_map_float(self: &DataContainer) -> Result<Vec<MapEntryFloat>>;
+        pub fn get_pool(self: &DataContainer) -> &PoolBridge;
 
         // ===== Parameter Map Bridge =====
         pub fn create_parameter_map_bridge() -> UniquePtr<ParameterMapBridge>;
         pub fn add(
             self: Pin<&mut ParameterMapBridge>,
             key: &str,
-            variant_data: UniquePtr<VariantData>,
+            data_container: UniquePtr<DataContainer>,
         ) -> Result<()>;
 
         // ===== Pool Bridge =====
         pub fn create_pool_bridge() -> UniquePtr<PoolBridge>;
         pub fn clone(self: &PoolBridge) -> UniquePtr<PoolBridge>;
-        pub fn set(self: Pin<&mut PoolBridge>, key: &str, variant_data: UniquePtr<VariantData>);
-        pub fn get(self: &PoolBridge, key: &str) -> Result<UniquePtr<VariantData>>;
+        pub fn set(self: Pin<&mut PoolBridge>, key: &str, data_container: UniquePtr<DataContainer>);
+        pub fn get(self: &PoolBridge, key: &str) -> Result<UniquePtr<DataContainer>>;
         pub fn contains(self: &PoolBridge, key: &str) -> bool;
         pub fn keys(self: &PoolBridge) -> Vec<String>;
     }

@@ -1,5 +1,5 @@
 #include "pool_bridge.h"
-#include "../variant_data/variant_data.h"
+#include "../data_container/data_container.h"
 #include <algorithm> // For std::find
 #include <essentia/pool.h>
 #include <stdexcept>
@@ -27,7 +27,7 @@ struct SetVisitor {
         reinterpret_cast<const std::vector<essentia::Real> &>(value);
     pool.set(key, real_vector);
   }
-  // Note: Tensor<Real> is not directly in VariantData, but might be added
+  // Note: Tensor<Real> is not directly in DataContainer, but might be added
   // later. void operator()(const essentia::Tensor<essentia::Real> &value) {
   // pool.set(key, value); }
 
@@ -76,31 +76,33 @@ std::unique_ptr<PoolBridge> PoolBridge::clone() const {
   return new_bridge;
 }
 
-void PoolBridge::set(rust::Str key, std::unique_ptr<VariantData> variant_data) {
+void PoolBridge::set(rust::Str key,
+                     std::unique_ptr<DataContainer> data_container) {
   if (!_pool) {
     throw std::runtime_error("Pool pointer is null and cannot be used");
   }
   std::string cpp_key(key);
-  std::visit(SetVisitor{*_pool, cpp_key}, variant_data->data);
+  std::visit(SetVisitor{*_pool, cpp_key}, data_container->data);
 }
 
-std::unique_ptr<VariantData> PoolBridge::get(rust::Str key) const {
+std::unique_ptr<DataContainer> PoolBridge::get(rust::Str key) const {
   if (!_pool) {
     throw std::runtime_error("Pool pointer is null and cannot be used");
   }
   std::string cpp_key(key);
   if (_pool->contains<essentia::Real>(cpp_key)) {
-    return std::make_unique<VariantData>(_pool->value<essentia::Real>(cpp_key));
+    return std::make_unique<DataContainer>(
+        _pool->value<essentia::Real>(cpp_key));
   }
   if (_pool->contains<std::string>(cpp_key)) {
-    return std::make_unique<VariantData>(_pool->value<std::string>(cpp_key));
+    return std::make_unique<DataContainer>(_pool->value<std::string>(cpp_key));
   }
   if (_pool->contains<std::vector<essentia::Real>>(cpp_key)) {
-    return std::make_unique<VariantData>(
+    return std::make_unique<DataContainer>(
         _pool->value<std::vector<essentia::Real>>(cpp_key));
   }
   if (_pool->contains<std::vector<std::string>>(cpp_key)) {
-    return std::make_unique<VariantData>(
+    return std::make_unique<DataContainer>(
         _pool->value<std::vector<std::string>>(cpp_key));
   }
   // Note: Add other supported types from essentia::Pool here

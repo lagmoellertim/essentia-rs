@@ -6,9 +6,9 @@ fn main() {
         .file("bridge/algorithm_bridge/introspection.cpp")
         .file("bridge/parameter_map_bridge/parameter_map_bridge.cpp")
         .file("bridge/pool_bridge/pool_bridge.cpp")
-        .file("bridge/variant_data/accessors.cpp")
-        .file("bridge/variant_data/constructors.cpp")
-        .file("bridge/variant_data/introspection.cpp")
+        .file("bridge/data_container/accessors.cpp")
+        .file("bridge/data_container/constructors.cpp")
+        .file("bridge/data_container/introspection.cpp")
         .file("bridge/common/type_mapping.cpp")
         .include("target") // Include target directory so essentia/bridge/bridge.h can be found
         .include("bridge") // Add bridge directory to include path
@@ -48,5 +48,5 @@ fn main() {
     println!("cargo:rustc-link-search=native=/opt/homebrew/lib");
 
     println!("cargo:rerun-if-changed=bridge");
-    println!("cargo:rerun-if-changed=src/ffi.rs");
+    println!("cargo:rerun-if-changed=src/lib.rs");
 }
