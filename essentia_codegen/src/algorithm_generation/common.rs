@@ -3,6 +3,10 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use textwrap::fill;
 
+/// Sanitizes identifier strings to avoid Rust keyword conflicts.
+/// 
+/// If the input string is a Rust keyword, appends an underscore to make it a valid identifier.
+/// This ensures generated code compiles even when algorithm names or parameters match Rust keywords.
 pub fn sanitize_identifier_string(string: &str) -> String {
     match string {
         "type" | "match" | "if" | "else" | "while" | "for" | "loop" | "fn" | "let" | "mut"
@@ -14,6 +18,10 @@ pub fn sanitize_identifier_string(string: &str) -> String {
     }
 }
 
+/// Converts a string into a sequence of doc comment tokens.
+/// 
+/// Wraps the text to 80 characters and generates appropriate `#[doc = "..."]` attributes
+/// for use in generated Rust code.
 pub fn string_to_doc_comment(string: &str) -> TokenStream {
     let wrapped = fill(string, 80);
     let lines = wrapped.lines();
@@ -29,34 +37,46 @@ pub fn string_to_doc_comment(string: &str) -> TokenStream {
     tokens
 }
 
+/// Maps a DataType to its corresponding phantom type token stream.
+/// 
+/// This function provides the mapping between runtime data types and their
+/// compile-time phantom type representations used for type safety in the generated code.
 pub fn data_type_to_phantom(data_type: &DataType) -> TokenStream {
-    match data_type {
-        DataType::Bool => quote! { crate::phantom::Bool },
-        DataType::Float => quote! { crate::phantom::Float},
-        DataType::String => quote! { crate::phantom::String},
-        DataType::Int => quote! { crate::phantom::Int},
-        DataType::UnsignedInt => quote! { crate::phantom::UnsignedInt},
-        DataType::Long => quote! { crate::phantom::Long},
-        DataType::StereoSample => quote! { crate::phantom::StereoSample},
-        DataType::Complex => quote! { crate::phantom::Complex},
-        DataType::TensorFloat => quote! { crate::phantom::TensorFloat},
-        DataType::VectorFloat => quote! { crate::phantom::VectorFloat},
-        DataType::VectorString => quote! { crate::phantom::VectorString},
-        DataType::VectorBool => quote! { crate::phantom::VectorBool},
-        DataType::VectorInt => quote! { crate::phantom::VectorInt},
-        DataType::VectorStereoSample => quote! { crate::phantom::VectorStereoSample},
-        DataType::VectorComplex => quote! { crate::phantom::VectorComplex},
-        DataType::VectorVectorFloat => quote! { crate::phantom::VectorVectorFloat},
-        DataType::VectorVectorString => quote! { crate::phantom::VectorVectorString},
-        DataType::VectorVectorStereoSample => quote! { crate::phantom::VectorVectorStereoSample},
-        DataType::VectorVectorComplex => quote! { crate::phantom::VectorVectorComplex},
-        DataType::VectorMatrixFloat => quote! { crate::phantom::VectorMatrixFloat},
-        DataType::MapVectorFloat => quote! { crate::phantom::MapVectorFloat},
-        DataType::MapVectorString => quote! { crate::phantom::MapVectorString},
-        DataType::MapVectorInt => quote! { crate::phantom::MapVectorInt},
-        DataType::MapVectorComplex => quote! { crate::phantom::MapVectorComplex},
-        DataType::MapFloat => quote! { crate::phantom::MapFloat},
-        DataType::MatrixFloat => quote! { crate::phantom::MatrixFloat},
-        DataType::Pool => quote! { crate::phantom::Pool},
+    macro_rules! phantom_match {
+        ($($variant:ident),+ $(,)?) => {
+            match data_type {
+                $(DataType::$variant => quote! { crate::phantom::$variant },)+
+            }
+        };
+    }
+
+    phantom_match! {
+        Bool,
+        Float,
+        String,
+        Int,
+        UnsignedInt,
+        Long,
+        StereoSample,
+        Complex,
+        TensorFloat,
+        VectorFloat,
+        VectorString,
+        VectorBool,
+        VectorInt,
+        VectorStereoSample,
+        VectorComplex,
+        VectorVectorFloat,
+        VectorVectorString,
+        VectorVectorStereoSample,
+        VectorVectorComplex,
+        VectorMatrixFloat,
+        MapVectorFloat,
+        MapVectorString,
+        MapVectorInt,
+        MapVectorComplex,
+        MapFloat,
+        MatrixFloat,
+        Pool,
     }
 }

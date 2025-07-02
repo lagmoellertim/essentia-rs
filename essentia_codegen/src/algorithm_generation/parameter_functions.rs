@@ -7,6 +7,10 @@ use crate::algorithm_generation::common::{
     data_type_to_phantom, sanitize_identifier_string, string_to_doc_comment,
 };
 
+/// Generates documentation comment for a parameter function.
+/// 
+/// Creates a doc comment that describes the parameter's purpose and includes
+/// the parameter's description from the algorithm introspection.
 fn generate_parameter_function_docs(parameter: &ParameterInfo) -> TokenStream {
     let name = parameter.name();
     let description = parameter.description();
@@ -15,6 +19,13 @@ fn generate_parameter_function_docs(parameter: &ParameterInfo) -> TokenStream {
     string_to_doc_comment(&doc)
 }
 
+/// Generates parameter setter functions for an algorithm.
+/// 
+/// Creates a function for each parameter that:
+/// - Takes a value that can be converted to the appropriate data container type
+/// - Validates the parameter type matches the expected type
+/// - Sets the parameter value on the algorithm
+/// - Returns the algorithm instance for method chaining
 pub fn generate_parameter_functions(algorithm_introspection: &Introspection) -> Vec<TokenStream> {
     algorithm_introspection
         .parameters()
