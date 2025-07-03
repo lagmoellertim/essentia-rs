@@ -15,6 +15,11 @@ impl Library {
 }
 
 fn main() {
+    if std::env::var("DOCS_RS").is_ok() {
+        println!("cargo:warning=Skipping build.rs on docs.rs");
+        return;
+    }
+
     let mut build = cxx_build::bridge("src/lib.rs");
     build
         .file("bridge/bridge.cpp")

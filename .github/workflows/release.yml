@@ -112,20 +112,11 @@ jobs:
         echo "Publishing essentia-sys..."
         cargo publish -p essentia-sys --token $CARGO_REGISTRY_TOKEN
         
-        echo "Waiting for essentia-sys to be available..."
-        sleep 30
-        
         echo "Publishing essentia-core..."
         cargo publish -p essentia-core --token $CARGO_REGISTRY_TOKEN
         
-        echo "Waiting for essentia-core to be available..."
-        sleep 30
-        
         echo "Publishing essentia-codegen..."
         cargo publish -p essentia-codegen --token $CARGO_REGISTRY_TOKEN
-        
-        echo "Waiting for essentia-codegen to be available..."
-        sleep 30
         
         echo "Publishing essentia..."
         cargo publish -p essentia --token $CARGO_REGISTRY_TOKEN
