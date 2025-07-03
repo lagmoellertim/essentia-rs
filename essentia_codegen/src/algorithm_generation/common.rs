@@ -20,9 +20,16 @@ pub fn string_to_doc_comment(string: &str) -> TokenStream {
 
     let mut tokens = TokenStream::new();
     for line in lines {
-        let line = format!(" {}", line);
+        // If line starts with 4+ spaces, it's likely a code example that shouldn't be tested
+        let formatted_line = if line.len() >= 4 && line.chars().take(4).all(|c| c == ' ') {
+            // Add a single space to break the 4-space doctest pattern
+            format!("  {}", line.trim_start())
+        } else {
+            format!(" {}", line)
+        };
+        
         tokens.extend(quote! {
-            #[doc = #line]
+            #[doc = #formatted_line]
         });
     }
 

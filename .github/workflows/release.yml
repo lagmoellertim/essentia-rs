@@ -63,9 +63,9 @@ jobs:
       run: |
         cargo test --all --verbose
 
-    - name: Build release version
+    - name: Build version
       run: |
-        cargo build --release --all
+        cargo build --all
 
     - name: Generate documentation
       run: |
