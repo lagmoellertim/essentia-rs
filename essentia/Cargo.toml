@@ -5,8 +5,8 @@ edition = "2024"
 
 [dependencies]
 cxx = "1.0.160"
-essentia-core = { path = "../essentia_core" }
-thiserror = "1.0"
+essentia-core = { path = "../essentia_core", version = "=0.1.0"}
+thiserror = "2.0.12"
 
 [build-dependencies]
 essentia-codegen = { path = "../essentia_codegen" }
