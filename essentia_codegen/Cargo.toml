@@ -1,6 +1,6 @@
 [package]
 name = "essentia-codegen"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 license = "MIT"
 description = "Code generation utilities for Essentia Rust bindings"
@@ -15,7 +15,7 @@ readme = "../README.md"
 prettyplease = "0.2.35"
 quote = "1.0.40"
 syn = "2.0.104"
-essentia-core = { path = "../essentia_core", version = "=0.1.1"}
+essentia-core = { path = "../essentia_core", version = "=0.1.2"}
 convert_case = "0.8.0"
 regex = "1.11.1"
 proc-macro2 = "1.0.95"

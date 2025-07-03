@@ -1,6 +1,6 @@
 [package]
 name = "essentia-core"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 license = "MIT"
 description = "Core Rust library wrapping Essentia functionality"
@@ -13,7 +13,7 @@ readme = "../README.md"
 
 [dependencies]
 cxx = "1.0.160"
-essentia-sys = { path = "../essentia_sys", version = "=0.1.0"}
+essentia-sys = { path = "../essentia_sys", version = "=0.1.2"}
 ndarray = "0.16.1"
 num = "0.4"
 once_cell = "1.21.3"

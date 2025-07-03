@@ -34,7 +34,7 @@ fn main() {
         .file("bridge/common/type_mapping.cpp")
         .include(".");
 
-    let libraries = [
+    let mut libraries = vec![
         Library::new("essentia", "essentia", Some("essentia")),
         Library::new("eigen3", "eigen3", None),
         Library::new("yaml", "yaml-0.1", Some("yaml")),
@@ -46,12 +46,42 @@ fn main() {
         Library::new("swresample", "libswresample", Some("swresample")),
         Library::new("avcodec", "libavcodec", Some("avcodec")),
         Library::new("avutil", "libavutil", Some("avutil")),
-        Library::new("tensorflow", "tensorflow", Some("tensorflow")),
     ];
 
+    let use_tensorflow = match std::env::var("USE_TENSORFLOW") {
+        Ok(val) => !matches!(val.to_lowercase().as_str(), "0" | "false" | "no" | "off"),
+        Err(_) => true,
+    };
+
+    if use_tensorflow {
+        libraries.push(Library::new("tensorflow", "tensorflow", Some("tensorflow")))
+    } else {
+        println!("cargo:warning=Skipping tensorflow support as USE_TENSORFLOW=0");
+    }
+
     for library in libraries {
-        let pkg_info =
-            pkg_config::probe_library(&library.pkg_config_name).expect("Failed to probe library");
+        let pkg_info = match pkg_config::probe_library(&library.pkg_config_name) {
+            Ok(pkg_info) => pkg_info,
+            Err(err) => match library.name.as_str() {
+                "tensorflow" => {
+                    println!("cargo:error=Failed to find tensorflow: {}", err);
+                    println!(
+                        "cargo:error=If you intend to use essentia without tensorflow, set USE_TENSORFLOW=0"
+                    );
+                    std::process::exit(1);
+                }
+                _ => {
+                    println!(
+                        "cargo:error=Failed to find required library '{}': {}",
+                        library.pkg_config_name, err
+                    );
+                    println!(
+                        "cargo:error=Please install the library or check your pkg-config setup"
+                    );
+                    std::process::exit(1);
+                }
+            },
+        };
 
         println!("{:?}", pkg_info);
 
