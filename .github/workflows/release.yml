@@ -119,7 +119,7 @@ jobs:
         cargo publish -p essentia-codegen --token $CARGO_REGISTRY_TOKEN
         
         echo "Publishing essentia..."
-        cargo publish -p essentia --token $CARGO_REGISTRY_TOKEN
+        cargo publish -p essentia --token $CARGO_REGISTRY_TOKEN --no-verify
 
     - name: Push git changes and tags
       if: steps.check_version.outputs.already_published == 'false'
