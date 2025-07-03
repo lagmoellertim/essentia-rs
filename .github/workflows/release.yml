@@ -42,30 +42,22 @@ jobs:
         override: true
         components: rustfmt, clippy
 
-    - name: Install cargo-edit for version bumping
+    - name: Install cargo-workspaces for version management
       run: |
-        cargo install cargo-edit --locked
+        cargo install cargo-workspaces --locked
 
     - name: Update versions in all Cargo.toml files
       run: |
-        VERSION="${{ github.event.inputs.version }}"
-        echo "Updating all crates to version $VERSION"
+        RELEASE_TYPE="${{ github.event.inputs.release_type }}"
+        echo "Bumping all crates using $RELEASE_TYPE version bump"
         
-        # Update workspace member versions
-        cargo set-version -p essentia-sys $VERSION
-        cargo set-version -p essentia-core $VERSION
-        cargo set-version -p essentia-codegen $VERSION
-        cargo set-version -p essentia $VERSION
+        # Use cargo-workspaces to bump all workspace members and their dependencies
+        cargo ws version --no-git-commit --force "*" --exact --yes $RELEASE_TYPE
         
-        # Update internal dependencies to use new versions
-        cd essentia_core
-        cargo add essentia-sys@$VERSION --path ../essentia_sys
-        cd ../essentia_codegen
-        cargo add essentia-core@$VERSION --path ../essentia_core
-        cd ../essentia
-        cargo add essentia-core@$VERSION --path ../essentia_core
-        cargo add essentia-codegen@$VERSION --path ../essentia_codegen --build
-        cd ..
+        # Get the new version that was set
+        NEW_VERSION=$(grep '^version = ' essentia/Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+        echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+        echo "All workspace crates updated to version $NEW_VERSION"
 
     - name: Update Cargo.lock
       run: |
@@ -85,24 +77,24 @@ jobs:
         
     - name: Create git tag and commit
       run: |
-        VERSION="${{ github.event.inputs.version }}"
+        NEW_VERSION="${NEW_VERSION}"
         git add .
-        git commit -m "chore: bump version to $VERSION" || echo "No changes to commit"
-        git tag -a "v$VERSION" -m "Release version $VERSION"
+        git commit -m "chore: bump version to $NEW_VERSION" || echo "No changes to commit"
+        git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
 
     - name: Check if version is already published
       id: check_version
       run: |
-        VERSION="${{ github.event.inputs.version }}"
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        NEW_VERSION="${NEW_VERSION}"
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
         
         # Check if this version is already published
-        if cargo search essentia --limit 1 | grep -q "essentia = \"$VERSION\""; then
+        if cargo search essentia --limit 1 | grep -q "essentia = \"$NEW_VERSION\""; then
           echo "already_published=true" >> $GITHUB_OUTPUT
-          echo "Version $VERSION is already published"
+          echo "Version $NEW_VERSION is already published"
         else
           echo "already_published=false" >> $GITHUB_OUTPUT
-          echo "Version $VERSION is not yet published"
+          echo "Version $NEW_VERSION is not yet published"
         fi
 
     - name: Dry run publish
@@ -119,8 +111,8 @@ jobs:
       env:
         CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
       run: |
-        VERSION="${{ github.event.inputs.version }}"
-        echo "Publishing packages to crates.io version $VERSION..."
+        NEW_VERSION="${NEW_VERSION}"
+        echo "Publishing packages to crates.io version $NEW_VERSION..."
         
         # Publish in dependency order with proper error handling
         echo "Publishing essentia-sys..."
@@ -156,9 +148,18 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ github.event.inputs.version }}
-        release_name: Release v${{ github.event.inputs.version }}
+        tag_name: v${{ env.NEW_VERSION }}
+        release_name: Release v${{ env.NEW_VERSION }}
         body: |
-          ## Release v${{ github.event.inputs.version }}
+          ## Release v${{ env.NEW_VERSION }}
+          
+          ### Changes
+          - ${{ github.event.inputs.release_type }} version bump
+          
+          ### Installation
+          ```toml
+          [dependencies]
+          essentia = "${{ env.NEW_VERSION }}"
+          ```
         draft: false
         prerelease: false
