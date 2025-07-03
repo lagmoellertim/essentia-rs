@@ -1,6 +1,6 @@
 [package]
 name = "essentia"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 license = "MIT"
 description = "Idiomatic Rust wrapper for the Essentia audio analysis library 🎶🦀"
@@ -12,8 +12,8 @@ readme = "../README.md"
 
 [dependencies]
 cxx = "1.0.160"
-essentia-core = { path = "../essentia_core", version = "=0.1.0"}
+essentia-core = { path = "../essentia_core", version = "=0.1.1"}
 thiserror = "2.0.12"
 
 [build-dependencies]
-essentia-codegen = { path = "../essentia_codegen" }
+essentia-codegen = { path = "../essentia_codegen", version = "=0.1.1" }
