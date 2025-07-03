@@ -38,13 +38,6 @@ jobs:
         override: true
         components: rustfmt, clippy
 
-    - name: Configure Git
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --global --add safe.directory /github/workspace
-        git config --global --add safe.directory $(pwd)
-
     - name: Install cargo-workspaces for version management
       run: |
         cargo install cargo-workspaces --locked
