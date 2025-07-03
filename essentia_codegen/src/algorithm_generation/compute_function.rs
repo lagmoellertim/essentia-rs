@@ -9,7 +9,12 @@ use crate::algorithm_generation::common::{
     data_type_to_phantom, sanitize_identifier_string, string_to_doc_comment,
 };
 
-fn generate_compute_docs<'a>(introspection: &Introspection) -> TokenStream {
+/// Generates documentation for the compute function based on algorithm introspection.
+/// 
+/// Creates a comprehensive doc comment that includes:
+/// - A brief description of what the function does
+/// - A detailed list of all input parameters with their descriptions
+fn generate_compute_docs(introspection: &Introspection) -> TokenStream {
     let mut doc_string_lines = vec!["Computes the algorithm with the given inputs.".to_string()];
     let mut inputs = introspection.inputs().peekable();
 
@@ -27,6 +32,13 @@ fn generate_compute_docs<'a>(introspection: &Introspection) -> TokenStream {
     string_to_doc_comment(&doc_string_lines.join("\n"))
 }
 
+/// Generates the compute function for an algorithm.
+/// 
+/// This function creates the `compute` method that:
+/// - Takes input parameters matching the algorithm's input specification
+/// - Sets each input on the underlying algorithm
+/// - Executes the computation
+/// - Returns a result struct containing the computed outputs
 pub fn generate_compute_function(
     algorithm_result_struct_name: Ident,
     introspection: &Introspection,

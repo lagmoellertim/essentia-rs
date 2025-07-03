@@ -4,6 +4,12 @@ use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::parse_quote;
 
+/// Generates a category module file containing all algorithms for a specific category.
+/// 
+/// Creates a `mod.rs` file within the category directory that:
+/// - Declares all algorithm modules within the category
+/// - Re-exports all algorithm modules for convenient access
+/// - Maintains alphabetical ordering for consistency
 pub fn generate_category_module_file(
     out_dir: &Path,
     category_name: &str,
@@ -44,6 +50,6 @@ pub fn generate_category_module_file(
     };
 
     let formatted = prettyplease::unparse(&syntax_tree);
-    std::fs::write(module_file_path, formatted).unwrap();
+    std::fs::write(module_file_path, formatted)?;
     Ok(())
 }

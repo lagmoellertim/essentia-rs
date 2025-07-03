@@ -4,16 +4,20 @@ use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::parse_quote;
 
+/// Generates the main module file that declares all category modules.
+/// 
+/// Creates a `mod.rs` file in the output directory that contains public module declarations
+/// for each algorithm category. The categories are sorted alphabetically for consistency.
 pub fn generate_main_module_file(
     out_dir: &Path,
     category_module_names: &[String],
 ) -> std::io::Result<()> {
     let module_file_path = out_dir.join("mod.rs");
 
-    let mut sorted_categorie_module_names = category_module_names.to_vec();
-    sorted_categorie_module_names.sort();
+    let mut sorted_category_module_names = category_module_names.to_vec();
+    sorted_category_module_names.sort();
 
-    let category_module_declarations: Vec<TokenStream> = sorted_categorie_module_names
+    let category_module_declarations: Vec<TokenStream> = sorted_category_module_names
         .iter()
         .map(|category_module_name| {
             let category_module_identifier = format_ident!("{}", category_module_name);
