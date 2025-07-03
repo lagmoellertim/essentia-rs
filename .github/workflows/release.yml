@@ -17,22 +17,25 @@ jobs:
   release:
     runs-on: ubuntu-latest
     container: lagmoellertim/essentia:latest-tensorflow
-    
-    steps:  
+
+    steps:
     - name: Install dependencies
       run: |
         apt-get update
         apt-get install -y curl wget pkg-config build-essential git
-    
+
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         fetch-depth: 0
-    
+
     - name: Setup git
-      run: git config --global --add safe.directory $GITHUB_WORKSPACE
-        
+      run: |
+        git config --global --add safe.directory $GITHUB_WORKSPACE
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
     - name: Install Rust
       uses: actions-rs/toolchain@v1
       with:
@@ -73,7 +76,7 @@ jobs:
     - name: Generate documentation
       run: |
         cargo doc --no-deps --all-features --workspace
-        
+
     - name: Create git tag and commit
       run: |
         NEW_VERSION="${NEW_VERSION}"
