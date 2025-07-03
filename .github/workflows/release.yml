@@ -100,15 +100,6 @@ jobs:
           echo "Version $NEW_VERSION is not yet published"
         fi
 
-    - name: Dry run publish
-      if: steps.check_version.outputs.already_published == 'false'
-      run: |
-        echo "Running dry-run publish for all packages..."
-        cargo publish --dry-run -p essentia-sys
-        cargo publish --dry-run -p essentia-core
-        cargo publish --dry-run -p essentia-codegen
-        cargo publish --dry-run -p essentia
-
     - name: Publish to crates.io
       if: steps.check_version.outputs.already_published == 'false'
       env:
