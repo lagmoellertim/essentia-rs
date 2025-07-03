@@ -24,6 +24,6 @@ jobs:
         profile: minimal
         override: true
     
-    - name: Build essentia_core
+    - name: Build essentia
       run: |
         cargo build
