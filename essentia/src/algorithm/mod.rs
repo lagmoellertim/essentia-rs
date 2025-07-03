@@ -14,4 +14,4 @@ pub trait CreateAlgorithm<'a> {
     fn create(essentia: &'a Essentia) -> Self::Output;
 }
 
-include!(concat!(env!("OUT_DIR"), "/algorithms/mod.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/generated/mod.rs"));
