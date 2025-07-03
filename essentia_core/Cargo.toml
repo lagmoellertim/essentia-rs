@@ -2,6 +2,13 @@
 name = "essentia-core"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+description = "Core Rust library wrapping Essentia functionality."
+repository = "https://github.com/lagmoellertim/essentia-rs"
+authors = ["Tim-Luca Lagmöller <mail@lagmoellertim.de>"]
+keywords = ["audio", "ffi", "essentia", "signal-processing"]
+categories = ["api-bindings", "multimedia::audio"]
+readme = "../README.md"
 
 [dependencies]
 cxx = "1.0.160"
