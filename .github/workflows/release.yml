@@ -18,17 +18,17 @@ jobs:
     runs-on: ubuntu-latest
     container: lagmoellertim/essentia:latest-tensorflow
     
-    steps:
+    steps:  
+    - name: Install dependencies
+      run: |
+        apt-get update
+        apt-get install -y curl wget pkg-config build-essential git
+    
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         fetch-depth: 0
-      
-    - name: Install dependencies
-      run: |
-        apt-get update
-        apt-get install -y curl wget pkg-config build-essential git
         
     - name: Install Rust
       uses: actions-rs/toolchain@v1
@@ -37,6 +37,13 @@ jobs:
         profile: minimal
         override: true
         components: rustfmt, clippy
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global --add safe.directory /github/workspace
+        git config --global --add safe.directory $(pwd)
 
     - name: Install cargo-workspaces for version management
       run: |
@@ -74,6 +81,7 @@ jobs:
     - name: Create git tag and commit
       run: |
         NEW_VERSION="${NEW_VERSION}"
+        
         git add .
         git commit -m "chore: bump version to $NEW_VERSION" || echo "No changes to commit"
         git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
