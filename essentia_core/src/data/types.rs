@@ -1,8 +1,49 @@
 use essentia_sys::ffi;
 use std::fmt;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum DataType {
+/// Macro to generate the DataType enum and its string representation
+macro_rules! define_data_types {
+    ($($variant:ident),+ $(,)?) => {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        pub enum DataType {
+            $($variant,)+
+        }
+
+        impl DataType {
+            pub fn as_str(&self) -> &'static str {
+                match self {
+                    $(DataType::$variant => stringify!($variant),)+
+                }
+            }
+        }
+
+        impl fmt::Display for DataType {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "{}", self.as_str())
+            }
+        }
+
+        impl From<ffi::DataType> for DataType {
+            fn from(ffi_type: ffi::DataType) -> Self {
+                match ffi_type {
+                    $(ffi::DataType::$variant => DataType::$variant,)+
+                    _ => panic!("Encountered unknown FFI DataType: {:?}", ffi_type),
+                }
+            }
+        }
+
+        impl From<DataType> for ffi::DataType {
+            fn from(data_type: DataType) -> Self {
+                match data_type {
+                    $(DataType::$variant => ffi::DataType::$variant,)+
+                }
+            }
+        }
+    };
+}
+
+// Define all data types using the macro
+define_data_types! {
     Float,
     String,
     Bool,
@@ -32,155 +73,54 @@ pub enum DataType {
     Pool,
 }
 
-impl DataType {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            DataType::Float => "Float",
-            DataType::String => "String",
-            DataType::Bool => "Bool",
-            DataType::Int => "Int",
-            DataType::UnsignedInt => "UnsignedInt",
-            DataType::Long => "Long",
-            DataType::StereoSample => "StereoSample",
-            DataType::Complex => "Complex",
-            DataType::TensorFloat => "TensorFloat",
-            DataType::VectorFloat => "VectorFloat",
-            DataType::VectorString => "VectorString",
-            DataType::VectorBool => "VectorBool",
-            DataType::VectorInt => "VectorInt",
-            DataType::VectorStereoSample => "VectorStereoSample",
-            DataType::VectorComplex => "VectorComplex",
-            DataType::VectorVectorFloat => "VectorVectorFloat",
-            DataType::VectorVectorString => "VectorVectorString",
-            DataType::VectorVectorStereoSample => "VectorVectorStereoSample",
-            DataType::VectorVectorComplex => "VectorVectorComplex",
-            DataType::VectorMatrixFloat => "VectorMatrixFloat",
-            DataType::MapVectorFloat => "MapVectorFloat",
-            DataType::MapVectorString => "MapVectorString",
-            DataType::MapVectorInt => "MapVectorInt",
-            DataType::MapVectorComplex => "MapVectorComplex",
-            DataType::MapFloat => "MapFloat",
-            DataType::MatrixFloat => "MatrixFloat",
-            DataType::Pool => "Pool",
-        }
-    }
-}
-
-impl fmt::Display for DataType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.as_str())
-    }
-}
-
-impl From<ffi::DataType> for DataType {
-    fn from(ffi_type: ffi::DataType) -> Self {
-        match ffi_type {
-            ffi::DataType::Float => DataType::Float,
-            ffi::DataType::String => DataType::String,
-            ffi::DataType::Bool => DataType::Bool,
-            ffi::DataType::Int => DataType::Int,
-            ffi::DataType::UnsignedInt => DataType::UnsignedInt,
-            ffi::DataType::Long => DataType::Long,
-            ffi::DataType::StereoSample => DataType::StereoSample,
-            ffi::DataType::Complex => DataType::Complex,
-            ffi::DataType::TensorFloat => DataType::TensorFloat,
-            ffi::DataType::VectorFloat => DataType::VectorFloat,
-            ffi::DataType::VectorString => DataType::VectorString,
-            ffi::DataType::VectorBool => DataType::VectorBool,
-            ffi::DataType::VectorInt => DataType::VectorInt,
-            ffi::DataType::VectorStereoSample => DataType::VectorStereoSample,
-            ffi::DataType::VectorComplex => DataType::VectorComplex,
-            ffi::DataType::VectorVectorFloat => DataType::VectorVectorFloat,
-            ffi::DataType::VectorVectorString => DataType::VectorVectorString,
-            ffi::DataType::VectorVectorStereoSample => DataType::VectorVectorStereoSample,
-            ffi::DataType::VectorVectorComplex => DataType::VectorVectorComplex,
-            ffi::DataType::VectorMatrixFloat => DataType::VectorMatrixFloat,
-            ffi::DataType::MapVectorFloat => DataType::MapVectorFloat,
-            ffi::DataType::MapVectorString => DataType::MapVectorString,
-            ffi::DataType::MapVectorInt => DataType::MapVectorInt,
-            ffi::DataType::MapVectorComplex => DataType::MapVectorComplex,
-            ffi::DataType::MapFloat => DataType::MapFloat,
-            ffi::DataType::MatrixFloat => DataType::MatrixFloat,
-            ffi::DataType::Pool => DataType::Pool,
-            _ => panic!("Encountered unknown FFI DataType: {:?}", ffi_type),
-        }
-    }
-}
-
-impl From<DataType> for ffi::DataType {
-    fn from(data_type: DataType) -> Self {
-        match data_type {
-            DataType::Float => ffi::DataType::Float,
-            DataType::String => ffi::DataType::String,
-            DataType::Bool => ffi::DataType::Bool,
-            DataType::Int => ffi::DataType::Int,
-            DataType::UnsignedInt => ffi::DataType::UnsignedInt,
-            DataType::Long => ffi::DataType::Long,
-            DataType::StereoSample => ffi::DataType::StereoSample,
-            DataType::Complex => ffi::DataType::Complex,
-            DataType::TensorFloat => ffi::DataType::TensorFloat,
-            DataType::VectorFloat => ffi::DataType::VectorFloat,
-            DataType::VectorString => ffi::DataType::VectorString,
-            DataType::VectorBool => ffi::DataType::VectorBool,
-            DataType::VectorInt => ffi::DataType::VectorInt,
-            DataType::VectorStereoSample => ffi::DataType::VectorStereoSample,
-            DataType::VectorComplex => ffi::DataType::VectorComplex,
-            DataType::VectorVectorFloat => ffi::DataType::VectorVectorFloat,
-            DataType::VectorVectorString => ffi::DataType::VectorVectorString,
-            DataType::VectorVectorStereoSample => ffi::DataType::VectorVectorStereoSample,
-            DataType::VectorVectorComplex => ffi::DataType::VectorVectorComplex,
-            DataType::VectorMatrixFloat => ffi::DataType::VectorMatrixFloat,
-            DataType::MapVectorFloat => ffi::DataType::MapVectorFloat,
-            DataType::MapVectorString => ffi::DataType::MapVectorString,
-            DataType::MapVectorInt => ffi::DataType::MapVectorInt,
-            DataType::MapVectorComplex => ffi::DataType::MapVectorComplex,
-            DataType::MapFloat => ffi::DataType::MapFloat,
-            DataType::MatrixFloat => ffi::DataType::MatrixFloat,
-            DataType::Pool => ffi::DataType::Pool,
-        }
-    }
-}
-
 pub mod phantom {
-    pub struct Any;
+    /// Macro to define phantom types
+    macro_rules! define_phantom_types {
+        ($($type_name:ident),+ $(,)?) => {
+            pub struct Any;
+            $(pub struct $type_name;)+
+        };
+    }
 
-    // Scalar types
-    pub struct Bool;
-    pub struct String;
-    pub struct Int;
-    pub struct Float;
-    pub struct UnsignedInt;
-    pub struct Long;
-    pub struct StereoSample;
-    pub struct Complex;
-    pub struct TensorFloat;
-
-    // Vector types
-    pub struct VectorBool;
-    pub struct VectorString;
-    pub struct VectorInt;
-    pub struct VectorFloat;
-    pub struct VectorStereoSample;
-    pub struct VectorComplex;
-
-    // Nested vector types
-    pub struct VectorVectorFloat;
-    pub struct VectorVectorString;
-    pub struct VectorVectorStereoSample;
-    pub struct VectorVectorComplex;
-    pub struct VectorMatrixFloat;
-
-    // Matrix types
-    pub struct MatrixFloat;
-
-    // Map types
-    pub struct MapVectorFloat;
-    pub struct MapVectorString;
-    pub struct MapVectorInt;
-    pub struct MapVectorComplex;
-    pub struct MapFloat;
-
-    pub struct Pool;
+    define_phantom_types! {
+        // Scalar types
+        Bool,
+        String,
+        Int,
+        Float,
+        UnsignedInt,
+        Long,
+        StereoSample,
+        Complex,
+        TensorFloat,
+        
+        // Vector types
+        VectorBool,
+        VectorString,
+        VectorInt,
+        VectorFloat,
+        VectorStereoSample,
+        VectorComplex,
+        
+        // Nested vector types
+        VectorVectorFloat,
+        VectorVectorString,
+        VectorVectorStereoSample,
+        VectorVectorComplex,
+        VectorMatrixFloat,
+        
+        // Matrix types
+        MatrixFloat,
+        
+        // Map types
+        MapVectorFloat,
+        MapVectorString,
+        MapVectorInt,
+        MapVectorComplex,
+        MapFloat,
+        
+        Pool,
+    }
 }
 
 pub trait HasDataType {
@@ -191,110 +131,43 @@ pub trait HasDataType {
     }
 }
 
-impl HasDataType for phantom::Bool {
-    const DATA_TYPE: DataType = DataType::Bool;
+/// Macro to implement HasDataType for phantom types
+macro_rules! impl_has_data_type {
+    ($($phantom_type:ident => $data_type:ident),+ $(,)?) => {
+        $(
+            impl HasDataType for phantom::$phantom_type {
+                const DATA_TYPE: DataType = DataType::$data_type;
+            }
+        )+
+    };
 }
 
-impl HasDataType for phantom::String {
-    const DATA_TYPE: DataType = DataType::String;
-}
-
-impl HasDataType for phantom::Int {
-    const DATA_TYPE: DataType = DataType::Int;
-}
-
-impl HasDataType for phantom::Float {
-    const DATA_TYPE: DataType = DataType::Float;
-}
-
-impl HasDataType for phantom::UnsignedInt {
-    const DATA_TYPE: DataType = DataType::UnsignedInt;
-}
-
-impl HasDataType for phantom::Long {
-    const DATA_TYPE: DataType = DataType::Long;
-}
-
-impl HasDataType for phantom::StereoSample {
-    const DATA_TYPE: DataType = DataType::StereoSample;
-}
-
-impl HasDataType for phantom::Complex {
-    const DATA_TYPE: DataType = DataType::Complex;
-}
-
-impl HasDataType for phantom::TensorFloat {
-    const DATA_TYPE: DataType = DataType::TensorFloat;
-}
-
-impl HasDataType for phantom::VectorBool {
-    const DATA_TYPE: DataType = DataType::VectorBool;
-}
-
-impl HasDataType for phantom::VectorString {
-    const DATA_TYPE: DataType = DataType::VectorString;
-}
-
-impl HasDataType for phantom::VectorInt {
-    const DATA_TYPE: DataType = DataType::VectorInt;
-}
-
-impl HasDataType for phantom::VectorFloat {
-    const DATA_TYPE: DataType = DataType::VectorFloat;
-}
-
-impl HasDataType for phantom::VectorStereoSample {
-    const DATA_TYPE: DataType = DataType::VectorStereoSample;
-}
-
-impl HasDataType for phantom::VectorComplex {
-    const DATA_TYPE: DataType = DataType::VectorComplex;
-}
-
-impl HasDataType for phantom::VectorVectorFloat {
-    const DATA_TYPE: DataType = DataType::VectorVectorFloat;
-}
-
-impl HasDataType for phantom::VectorVectorString {
-    const DATA_TYPE: DataType = DataType::VectorVectorString;
-}
-
-impl HasDataType for phantom::VectorVectorStereoSample {
-    const DATA_TYPE: DataType = DataType::VectorVectorStereoSample;
-}
-
-impl HasDataType for phantom::VectorVectorComplex {
-    const DATA_TYPE: DataType = DataType::VectorVectorComplex;
-}
-
-impl HasDataType for phantom::VectorMatrixFloat {
-    const DATA_TYPE: DataType = DataType::VectorMatrixFloat;
-}
-
-impl HasDataType for phantom::MatrixFloat {
-    const DATA_TYPE: DataType = DataType::MatrixFloat;
-}
-
-impl HasDataType for phantom::MapVectorFloat {
-    const DATA_TYPE: DataType = DataType::MapVectorFloat;
-}
-
-impl HasDataType for phantom::MapVectorString {
-    const DATA_TYPE: DataType = DataType::MapVectorString;
-}
-
-impl HasDataType for phantom::MapVectorInt {
-    const DATA_TYPE: DataType = DataType::MapVectorInt;
-}
-
-impl HasDataType for phantom::MapVectorComplex {
-    const DATA_TYPE: DataType = DataType::MapVectorComplex;
-}
-
-impl HasDataType for phantom::MapFloat {
-    const DATA_TYPE: DataType = DataType::MapFloat;
-}
-
-impl HasDataType for phantom::Pool {
-    const DATA_TYPE: DataType = DataType::Pool;
+impl_has_data_type! {
+    Bool => Bool,
+    String => String,
+    Int => Int,
+    Float => Float,
+    UnsignedInt => UnsignedInt,
+    Long => Long,
+    StereoSample => StereoSample,
+    Complex => Complex,
+    TensorFloat => TensorFloat,
+    VectorBool => VectorBool,
+    VectorString => VectorString,
+    VectorInt => VectorInt,
+    VectorFloat => VectorFloat,
+    VectorStereoSample => VectorStereoSample,
+    VectorComplex => VectorComplex,
+    VectorVectorFloat => VectorVectorFloat,
+    VectorVectorString => VectorVectorString,
+    VectorVectorStereoSample => VectorVectorStereoSample,
+    VectorVectorComplex => VectorVectorComplex,
+    VectorMatrixFloat => VectorMatrixFloat,
+    MatrixFloat => MatrixFloat,
+    MapVectorFloat => MapVectorFloat,
+    MapVectorString => MapVectorString,
+    MapVectorInt => MapVectorInt,
+    MapVectorComplex => MapVectorComplex,
+    MapFloat => MapFloat,
+    Pool => Pool,
 }

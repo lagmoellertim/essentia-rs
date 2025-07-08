@@ -7,6 +7,12 @@ use crate::algorithm_generation::common::{
     data_type_to_phantom, sanitize_identifier_string, string_to_doc_comment,
 };
 
+/// Generates output accessor functions for an algorithm result.
+/// 
+/// Creates a function for each output that:
+/// - Retrieves the output value from the computation result
+/// - Provides type-safe access to the output data
+/// - Includes comprehensive documentation about the output
 pub fn generate_output_functions(introspection: &Introspection) -> Vec<TokenStream> {
     introspection
         .outputs()
