@@ -1,17 +1,12 @@
 pub use essentia_core::algorithm::{Configured, Initialized};
 
-pub mod dynamic {
-    pub use essentia_core::algorithm::*;
-}
-
 mod error;
 pub use error::*;
 
 use crate::Essentia;
 
 pub trait CreateAlgorithm<'a> {
-    type Output;
-    fn create(essentia: &'a Essentia) -> Self::Output;
+    fn create(essentia: &'a Essentia) -> Self;
 }
 
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/generated/mod.rs"));
+include!(concat!(env!("OUT_DIR"), "/algorithms/mod.rs"));

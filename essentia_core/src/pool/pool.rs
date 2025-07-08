@@ -2,10 +2,9 @@ use cxx::UniquePtr;
 use essentia_sys::ffi;
 use thiserror::Error;
 
+use crate::IntoDataContainer;
 use crate::data::types::HasDataType;
-use crate::data::{
-    ConversionError, DataContainer, DataType, GetFromDataContainer, PoolData, TryIntoDataContainer,
-};
+use crate::data::{DataContainer, DataType, GetFromDataContainer, PoolData};
 
 pub struct Pool {
     inner: UniquePtr<ffi::PoolBridge>,
@@ -28,21 +27,11 @@ impl Pool {
         Self { inner: bridge }
     }
 
-    pub fn set<T>(
-        &mut self,
-        key: &str,
-        value: impl TryIntoDataContainer<T>,
-    ) -> Result<(), PoolError>
+    pub fn set<T>(&mut self, key: &str, value: impl IntoDataContainer<T>) -> Result<(), PoolError>
     where
         T: PoolData + HasDataType,
     {
-        let data_container =
-            value
-                .try_into_data_container()
-                .map_err(|error| PoolError::DataConversion {
-                    key: key.to_string(),
-                    source: error,
-                })?;
+        let data_container = value.into_data_container();
 
         self.inner
             .pin_mut()
@@ -157,13 +146,6 @@ pub enum PoolError {
         key: String,
         expected: DataType,
         actual: DataType,
-    },
-
-    #[error("Failed to convert data for key '{key}': {source}")]
-    DataConversion {
-        key: String,
-        #[source]
-        source: ConversionError,
     },
 
     #[error("Internal error for key '{key}': {source}")]

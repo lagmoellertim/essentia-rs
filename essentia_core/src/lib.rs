@@ -16,8 +16,8 @@ pub mod pool;
 // ==============================================================================
 
 // Core data types with compile-time constraints
-pub use data::{ConversionError, GetFromDataContainer, IntoDataContainer, TryIntoDataContainer};
-pub use data::{DataContainer, DataType, phantom};
+pub use data::{ConversionError, GetFromDataContainer, IntoDataContainer};
+pub use data::{DataContainer, DataType, data_type};
 pub use data::{InputOutputData, ParameterData, PoolData};
 
 // Algorithm and execution
@@ -29,7 +29,3 @@ pub use pool::{Pool, PoolError};
 pub use algorithm::{
     ComputeError, ConfigurationError, InputError, OutputError, ParameterError, ResetError,
 };
-
-// Centralized error handling (to be enabled)
-// pub mod error;
-// pub use error::EssentiaError;

@@ -11,4 +11,4 @@ pub use container::DataContainer;
 pub use conversion_error::ConversionError;
 pub use conversion_get::{GetFromDataContainer, TryGetFromDataContainer};
 pub use conversion_into::{IntoDataContainer, TryIntoDataContainer};
-pub use types::{DataType, phantom};
+pub use types::{DataType, data_type};

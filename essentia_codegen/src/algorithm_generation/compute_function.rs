@@ -6,7 +6,7 @@ use quote::{format_ident, quote};
 use syn::Ident;
 
 use crate::algorithm_generation::common::{
-    data_type_to_phantom, sanitize_identifier_string, string_to_doc_comment,
+    data_type_enum_to_data_type_marker, sanitize_identifier_string, string_to_doc_comment,
 };
 
 fn generate_compute_docs<'a>(introspection: &Introspection) -> TokenStream {
@@ -37,11 +37,19 @@ pub fn generate_compute_function(
     for input in introspection.inputs() {
         let input_name = input.name().to_case(Case::Snake);
         let ident = format_ident!("{}", sanitize_identifier_string(&input_name));
-        let variant = data_type_to_phantom(&input.input_output_type());
+        let variant = data_type_enum_to_data_type_marker(&input.input_output_type());
 
-        p.push(quote! { #ident: impl crate::data::TryIntoDataContainer<#variant> });
+        p.push(quote! { #ident: impl crate::data::IntoDataContainer<#variant> });
         set_statements.push(quote! {
-            self.algorithm.set_input(#input_name, #ident)?;
+            match self.algorithm.set_input(#input_name, #ident) {
+                Ok(_) => {},
+                Err(essentia_core::algorithm::InputError::InputNotFound { input }) => {
+                    panic!("Input '{}' not found after validation", input);
+                }
+                Err(essentia_core::algorithm::InputError::TypeMismatch { input, expected, actual }) => {
+                    panic!("Type mismatch for input '{}': expected {:?}, found {:?}", input, expected, actual);
+                }
+            }
         });
     }
 
@@ -53,7 +61,11 @@ pub fn generate_compute_function(
             #(#set_statements)*
 
             Ok(#algorithm_result_struct_name {
-                compute_result: self.algorithm.compute()?,
+                compute_result: self.algorithm.compute().map_err(|e| match e {
+                    essentia_core::algorithm::ComputeError::Compute(exception) => {
+                        crate::algorithm::ComputeError::Compute(exception)
+                    }
+                })?,
             })
         }
     }

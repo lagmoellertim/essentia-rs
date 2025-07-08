@@ -76,7 +76,10 @@ impl Essentia {
             });
         }
 
-        let algorithm_bridge = ffi::create_algorithm_bridge(algorithm_name)?;
+        let algorithm_bridge = ffi::create_algorithm_bridge(algorithm_name).expect(&format!(
+            "failed to get algorithm '{}' after validation",
+            algorithm_name
+        ));
 
         Ok(Algorithm::new(algorithm_bridge))
     }

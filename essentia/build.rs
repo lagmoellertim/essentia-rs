@@ -1,4 +1,4 @@
-use std::{fs::remove_dir_all, path::Path};
+use std::path::Path;
 
 fn main() -> std::io::Result<()> {
     if std::env::var("DOCS_RS").is_ok() {
@@ -8,13 +8,7 @@ fn main() -> std::io::Result<()> {
 
     println!("cargo:rerun-if-changed=build.rs");
 
-    let directory = Path::new(&std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("generated");
-
-    if directory.exists() {
-        remove_dir_all(&directory)?;
-    }
-
-    println!("cargo:rerun-if-changed=generated");
+    let directory = Path::new(&std::env::var("OUT_DIR").unwrap()).join("algorithms");
 
     essentia_codegen::generate_code(&directory)?;
 

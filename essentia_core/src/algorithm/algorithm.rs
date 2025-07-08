@@ -3,12 +3,12 @@ use essentia_sys::ffi;
 use std::marker::PhantomData;
 
 use crate::{
+    IntoDataContainer,
     algorithm::{
         ComputeError, ConfigurationError, InputError, Introspection, OutputError, ParameterError,
         ResetError,
     },
-    data::types::HasDataType,
-    data::{DataContainer, InputOutputData, ParameterData, TryIntoDataContainer},
+    data::{DataContainer, InputOutputData, ParameterData, types::HasDataType},
     essentia::Essentia,
     parameter_map::ParameterMap,
 };
@@ -49,7 +49,7 @@ impl<'a> Algorithm<'a, Initialized> {
     pub fn parameter<T>(
         mut self,
         key: &str,
-        value: impl TryIntoDataContainer<T>,
+        value: impl IntoDataContainer<T>,
     ) -> Result<Self, ParameterError>
     where
         T: ParameterData + HasDataType,
@@ -61,7 +61,7 @@ impl<'a> Algorithm<'a, Initialized> {
     pub fn set_parameter<T>(
         &mut self,
         key: &str,
-        value: impl TryIntoDataContainer<T>,
+        value: impl IntoDataContainer<T>,
     ) -> Result<(), ParameterError>
     where
         T: ParameterData + HasDataType,
@@ -83,15 +83,9 @@ impl<'a> Algorithm<'a, Initialized> {
             });
         }
 
-        let variant_data =
-            value
-                .try_into_data_container()
-                .map_err(|error| ParameterError::DataConversion {
-                    parameter: key.to_string(),
-                    source: error,
-                })?;
+        let data_container = value.into_data_container();
 
-        self.state.parameter_map.set_parameter(key, variant_data);
+        self.state.parameter_map.set_parameter(key, data_container);
 
         Ok(())
     }
@@ -114,7 +108,7 @@ impl<'a> Algorithm<'a, Configured> {
     pub fn input<T>(
         mut self,
         key: &str,
-        value: impl TryIntoDataContainer<T>,
+        value: impl IntoDataContainer<T>,
     ) -> Result<Self, InputError>
     where
         T: InputOutputData + HasDataType,
@@ -126,7 +120,7 @@ impl<'a> Algorithm<'a, Configured> {
     pub fn set_input<T>(
         &mut self,
         key: &str,
-        value: impl TryIntoDataContainer<T>,
+        value: impl IntoDataContainer<T>,
     ) -> Result<(), InputError>
     where
         T: InputOutputData + HasDataType,
@@ -149,23 +143,14 @@ impl<'a> Algorithm<'a, Configured> {
             });
         }
 
-        let variant_data =
-            value
-                .try_into_data_container()
-                .map_err(|error| InputError::DataConversion {
-                    input: key.to_string(),
-                    source: error,
-                })?;
+        let data_container = value.into_data_container();
 
-        let owned_ptr = variant_data.into_owned_ptr();
+        let owned_ptr = data_container.into_owned_ptr();
 
         self.algorithm_bridge
             .pin_mut()
             .set_input(key, owned_ptr)
-            .map_err(|exception| InputError::Internal {
-                input: key.to_string(),
-                source: exception,
-            })?;
+            .expect(&format!("failed to set input '{}' after validation", key));
 
         Ok(())
     }
@@ -177,10 +162,10 @@ impl<'a> Algorithm<'a, Configured> {
             self.algorithm_bridge
                 .pin_mut()
                 .setup_output(output.name(), data_type.into())
-                .map_err(|exception| ComputeError::OutputSetup {
-                    output: output.name().to_string(),
-                    source: exception,
-                })?;
+                .expect(&format!(
+                    "failed to setup output '{}' after validation",
+                    &output.name()
+                ));
         }
 
         self.algorithm_bridge
@@ -227,16 +212,13 @@ impl<'algorithm, 'result> ComputeResult<'algorithm, 'result> {
             });
         }
 
-        let variant_data = self
+        let data_container = self
             .algorithm
             .algorithm_bridge
             .get_output(key)
-            .map(|ffi_variant_data| DataContainer::new_borrowed(ffi_variant_data))
-            .map_err(|exception| OutputError::Internal {
-                output: key.to_string(),
-                source: exception,
-            })?;
+            .map(|ffi_data_container| DataContainer::new_borrowed(ffi_data_container))
+            .expect(&format!("failed to get output '{}' after validation", key));
 
-        Ok(variant_data)
+        Ok(data_container)
     }
 }
