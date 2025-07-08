@@ -39,7 +39,7 @@ impl<'a, T> DataContainer<'a, T> {
         }
     }
 
-    pub fn into_any(self) -> DataContainer<'a, super::types::phantom::Any> {
+    pub fn into_any(self) -> DataContainer<'a, super::types::data_type::Any> {
         DataContainer {
             inner: self.inner,
             _marker: PhantomData,

@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::data::{ConversionError, DataType};
+use crate::data::DataType;
 
 #[derive(Debug, Error)]
 pub enum ParameterError {
@@ -12,13 +12,6 @@ pub enum ParameterError {
         parameter: String,
         expected: DataType,
         actual: DataType,
-    },
-
-    #[error("Failed to convert data for parameter '{parameter}': {source}")]
-    DataConversion {
-        parameter: String,
-        #[source]
-        source: ConversionError,
     },
 }
 
@@ -39,20 +32,6 @@ pub enum InputError {
         expected: DataType,
         actual: DataType,
     },
-
-    #[error("Failed to convert data for input '{input}': {source}")]
-    DataConversion {
-        input: String,
-        #[source]
-        source: ConversionError,
-    },
-
-    #[error("Internal error for input '{input}': {source}")]
-    Internal {
-        input: String,
-        #[source]
-        source: cxx::Exception,
-    },
 }
 
 #[derive(Debug, Error)]
@@ -66,24 +45,10 @@ pub enum OutputError {
         expected: DataType,
         actual: DataType,
     },
-
-    #[error("Internal error for output '{output}': {source}")]
-    Internal {
-        output: String,
-        #[source]
-        source: cxx::Exception,
-    },
 }
 
 #[derive(Debug, Error)]
 pub enum ComputeError {
-    #[error("Failed to setup output '{output}': {source}")]
-    OutputSetup {
-        output: String,
-        #[source]
-        source: cxx::Exception,
-    },
-
     #[error("Computation failed: {0}")]
     Compute(#[from] cxx::Exception),
 }

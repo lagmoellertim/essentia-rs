@@ -2,7 +2,7 @@ use essentia_sys::ffi;
 use ndarray::{Array2, Array4};
 use std::collections::HashMap;
 
-use crate::{ConversionError, DataContainer, phantom};
+use crate::{ConversionError, DataContainer, data_type};
 
 pub trait IntoDataContainer<T> {
     fn into_data_container(self) -> DataContainer<'static, T>;
@@ -12,15 +12,6 @@ pub trait TryIntoDataContainer<T> {
     fn try_into_data_container(self) -> Result<DataContainer<'static, T>, ConversionError>;
 }
 
-impl<T, V> TryIntoDataContainer<T> for V
-where
-    V: IntoDataContainer<T>,
-{
-    fn try_into_data_container(self) -> Result<DataContainer<'static, T>, ConversionError> {
-        Ok(self.into_data_container())
-    }
-}
-
 impl<'a, T> IntoDataContainer<T> for DataContainer<'a, T> {
     fn into_data_container(self) -> DataContainer<'static, T> {
         let owned_ptr = self.into_owned_ptr();
@@ -28,50 +19,50 @@ impl<'a, T> IntoDataContainer<T> for DataContainer<'a, T> {
     }
 }
 
-impl IntoDataContainer<phantom::Bool> for bool {
-    fn into_data_container(self) -> DataContainer<'static, phantom::Bool> {
+impl IntoDataContainer<data_type::Bool> for bool {
+    fn into_data_container(self) -> DataContainer<'static, data_type::Bool> {
         DataContainer::new_owned(ffi::create_data_container_from_bool(self))
     }
 }
 
-impl IntoDataContainer<phantom::String> for &str {
-    fn into_data_container(self) -> DataContainer<'static, phantom::String> {
+impl IntoDataContainer<data_type::String> for &str {
+    fn into_data_container(self) -> DataContainer<'static, data_type::String> {
         DataContainer::new_owned(ffi::create_data_container_from_string(self))
     }
 }
 
-impl IntoDataContainer<phantom::Int> for i32 {
-    fn into_data_container(self) -> DataContainer<'static, phantom::Int> {
+impl IntoDataContainer<data_type::Int> for i32 {
+    fn into_data_container(self) -> DataContainer<'static, data_type::Int> {
         DataContainer::new_owned(ffi::create_data_container_from_int(self))
     }
 }
 
-impl IntoDataContainer<phantom::Float> for f32 {
-    fn into_data_container(self) -> DataContainer<'static, phantom::Float> {
+impl IntoDataContainer<data_type::Float> for f32 {
+    fn into_data_container(self) -> DataContainer<'static, data_type::Float> {
         DataContainer::new_owned(ffi::create_data_container_from_float(self))
     }
 }
 
-impl IntoDataContainer<phantom::UnsignedInt> for u32 {
-    fn into_data_container(self) -> DataContainer<'static, phantom::UnsignedInt> {
+impl IntoDataContainer<data_type::UnsignedInt> for u32 {
+    fn into_data_container(self) -> DataContainer<'static, data_type::UnsignedInt> {
         DataContainer::new_owned(ffi::create_data_container_from_unsigned_int(self))
     }
 }
 
-impl IntoDataContainer<phantom::Long> for i64 {
-    fn into_data_container(self) -> DataContainer<'static, phantom::Long> {
+impl IntoDataContainer<data_type::Long> for i64 {
+    fn into_data_container(self) -> DataContainer<'static, data_type::Long> {
         DataContainer::new_owned(ffi::create_data_container_from_long(self))
     }
 }
 
-impl IntoDataContainer<phantom::StereoSample> for ffi::StereoSample {
-    fn into_data_container(self) -> DataContainer<'static, phantom::StereoSample> {
+impl IntoDataContainer<data_type::StereoSample> for ffi::StereoSample {
+    fn into_data_container(self) -> DataContainer<'static, data_type::StereoSample> {
         DataContainer::new_owned(ffi::create_data_container_from_stereo_sample(self))
     }
 }
 
-impl IntoDataContainer<phantom::Complex> for num::Complex<f32> {
-    fn into_data_container(self) -> DataContainer<'static, phantom::Complex> {
+impl IntoDataContainer<data_type::Complex> for num::Complex<f32> {
+    fn into_data_container(self) -> DataContainer<'static, data_type::Complex> {
         DataContainer::new_owned(ffi::create_data_container_from_complex(ffi::Complex {
             real: self.re,
             imag: self.im,
@@ -79,8 +70,8 @@ impl IntoDataContainer<phantom::Complex> for num::Complex<f32> {
     }
 }
 
-impl IntoDataContainer<phantom::TensorFloat> for &Array4<f32> {
-    fn into_data_container(self) -> DataContainer<'static, phantom::TensorFloat> {
+impl IntoDataContainer<data_type::TensorFloat> for &Array4<f32> {
+    fn into_data_container(self) -> DataContainer<'static, data_type::TensorFloat> {
         let slice = self.as_slice().expect("Array must be contiguous");
         let shape = [
             self.shape()[0],
@@ -98,38 +89,38 @@ impl IntoDataContainer<phantom::TensorFloat> for &Array4<f32> {
     }
 }
 
-impl IntoDataContainer<phantom::VectorBool> for &[bool] {
-    fn into_data_container(self) -> DataContainer<'static, phantom::VectorBool> {
+impl IntoDataContainer<data_type::VectorBool> for &[bool] {
+    fn into_data_container(self) -> DataContainer<'static, data_type::VectorBool> {
         DataContainer::new_owned(ffi::create_data_container_from_vector_bool(self))
     }
 }
 
-impl IntoDataContainer<phantom::VectorInt> for &[i32] {
-    fn into_data_container(self) -> DataContainer<'static, phantom::VectorInt> {
+impl IntoDataContainer<data_type::VectorInt> for &[i32] {
+    fn into_data_container(self) -> DataContainer<'static, data_type::VectorInt> {
         DataContainer::new_owned(ffi::create_data_container_from_vector_int(self))
     }
 }
 
-impl IntoDataContainer<phantom::VectorString> for &[&str] {
-    fn into_data_container(self) -> DataContainer<'static, phantom::VectorString> {
+impl IntoDataContainer<data_type::VectorString> for &[&str] {
+    fn into_data_container(self) -> DataContainer<'static, data_type::VectorString> {
         DataContainer::new_owned(ffi::create_data_container_from_vector_string(self))
     }
 }
 
-impl IntoDataContainer<phantom::VectorFloat> for &[f32] {
-    fn into_data_container(self) -> DataContainer<'static, phantom::VectorFloat> {
+impl IntoDataContainer<data_type::VectorFloat> for &[f32] {
+    fn into_data_container(self) -> DataContainer<'static, data_type::VectorFloat> {
         DataContainer::new_owned(ffi::create_data_container_from_vector_float(self))
     }
 }
 
-impl IntoDataContainer<phantom::VectorStereoSample> for &[ffi::StereoSample] {
-    fn into_data_container(self) -> DataContainer<'static, phantom::VectorStereoSample> {
+impl IntoDataContainer<data_type::VectorStereoSample> for &[ffi::StereoSample] {
+    fn into_data_container(self) -> DataContainer<'static, data_type::VectorStereoSample> {
         DataContainer::new_owned(ffi::create_data_container_from_vector_stereo_sample(self))
     }
 }
 
-impl IntoDataContainer<phantom::VectorComplex> for &[num::Complex<f32>] {
-    fn into_data_container(self) -> DataContainer<'static, phantom::VectorComplex> {
+impl IntoDataContainer<data_type::VectorComplex> for &[num::Complex<f32>] {
+    fn into_data_container(self) -> DataContainer<'static, data_type::VectorComplex> {
         let ffi_vec: Vec<ffi::Complex> = self
             .iter()
             .map(|c| ffi::Complex {
@@ -141,8 +132,8 @@ impl IntoDataContainer<phantom::VectorComplex> for &[num::Complex<f32>] {
     }
 }
 
-impl IntoDataContainer<phantom::VectorVectorFloat> for &[Vec<f32>] {
-    fn into_data_container(self) -> DataContainer<'static, phantom::VectorVectorFloat> {
+impl IntoDataContainer<data_type::VectorVectorFloat> for &[Vec<f32>] {
+    fn into_data_container(self) -> DataContainer<'static, data_type::VectorVectorFloat> {
         DataContainer::new_owned(ffi::create_data_container_from_vector_vector_float(
             self.iter()
                 .map(|item| ffi::SliceFloat {
@@ -153,8 +144,8 @@ impl IntoDataContainer<phantom::VectorVectorFloat> for &[Vec<f32>] {
     }
 }
 
-impl IntoDataContainer<phantom::MatrixFloat> for &Array2<f32> {
-    fn into_data_container(self) -> DataContainer<'static, phantom::MatrixFloat> {
+impl IntoDataContainer<data_type::MatrixFloat> for &Array2<f32> {
+    fn into_data_container(self) -> DataContainer<'static, data_type::MatrixFloat> {
         let slice = self.as_slice().expect("Array must be contiguous");
         let (dim1, dim2) = self.dim();
 
@@ -164,8 +155,8 @@ impl IntoDataContainer<phantom::MatrixFloat> for &Array2<f32> {
     }
 }
 
-impl IntoDataContainer<phantom::VectorVectorString> for &[&[&str]] {
-    fn into_data_container(self) -> DataContainer<'static, phantom::VectorVectorString> {
+impl IntoDataContainer<data_type::VectorVectorString> for &[&[&str]] {
+    fn into_data_container(self) -> DataContainer<'static, data_type::VectorVectorString> {
         DataContainer::new_owned(ffi::create_data_container_from_vector_vector_string(
             self.iter()
                 .map(|item| ffi::VecString {
@@ -176,8 +167,8 @@ impl IntoDataContainer<phantom::VectorVectorString> for &[&[&str]] {
     }
 }
 
-impl IntoDataContainer<phantom::VectorVectorStereoSample> for &[&[ffi::StereoSample]] {
-    fn into_data_container(self) -> DataContainer<'static, phantom::VectorVectorStereoSample> {
+impl IntoDataContainer<data_type::VectorVectorStereoSample> for &[&[ffi::StereoSample]] {
+    fn into_data_container(self) -> DataContainer<'static, data_type::VectorVectorStereoSample> {
         DataContainer::new_owned(ffi::create_data_container_from_vector_vector_stereo_sample(
             self.iter()
                 .map(|item| ffi::SliceStereoSample { slice: item })
@@ -186,8 +177,8 @@ impl IntoDataContainer<phantom::VectorVectorStereoSample> for &[&[ffi::StereoSam
     }
 }
 
-impl IntoDataContainer<phantom::VectorVectorComplex> for &[Vec<num::Complex<f32>>] {
-    fn into_data_container(self) -> DataContainer<'static, phantom::VectorVectorComplex> {
+impl IntoDataContainer<data_type::VectorVectorComplex> for &[Vec<num::Complex<f32>>] {
+    fn into_data_container(self) -> DataContainer<'static, data_type::VectorVectorComplex> {
         DataContainer::new_owned(ffi::create_data_container_from_vector_vector_complex(
             self.iter()
                 .map(|item| ffi::VecComplex {
@@ -204,8 +195,8 @@ impl IntoDataContainer<phantom::VectorVectorComplex> for &[Vec<num::Complex<f32>
     }
 }
 
-impl IntoDataContainer<phantom::VectorMatrixFloat> for &[Array2<f32>] {
-    fn into_data_container(self) -> DataContainer<'static, phantom::VectorMatrixFloat> {
+impl IntoDataContainer<data_type::VectorMatrixFloat> for &[Array2<f32>] {
+    fn into_data_container(self) -> DataContainer<'static, data_type::VectorMatrixFloat> {
         DataContainer::new_owned(ffi::create_data_container_from_vector_matrix_float(
             self.iter()
                 .map(|array| {
@@ -218,8 +209,8 @@ impl IntoDataContainer<phantom::VectorMatrixFloat> for &[Array2<f32>] {
     }
 }
 
-impl IntoDataContainer<phantom::MapVectorFloat> for &HashMap<String, Vec<f32>> {
-    fn into_data_container(self) -> DataContainer<'static, phantom::MapVectorFloat> {
+impl IntoDataContainer<data_type::MapVectorFloat> for &HashMap<String, Vec<f32>> {
+    fn into_data_container(self) -> DataContainer<'static, data_type::MapVectorFloat> {
         DataContainer::new_owned(ffi::create_data_container_from_map_vector_float(
             self.iter()
                 .map(|(key, vec)| ffi::MapEntryVectorFloat {
@@ -231,8 +222,8 @@ impl IntoDataContainer<phantom::MapVectorFloat> for &HashMap<String, Vec<f32>> {
     }
 }
 
-impl IntoDataContainer<phantom::MapVectorString> for &HashMap<String, Vec<String>> {
-    fn into_data_container(self) -> DataContainer<'static, phantom::MapVectorString> {
+impl IntoDataContainer<data_type::MapVectorString> for &HashMap<String, Vec<String>> {
+    fn into_data_container(self) -> DataContainer<'static, data_type::MapVectorString> {
         DataContainer::new_owned(ffi::create_data_container_from_map_vector_string(
             self.iter()
                 .map(|(key, vec)| ffi::MapEntryVectorString {
@@ -244,8 +235,8 @@ impl IntoDataContainer<phantom::MapVectorString> for &HashMap<String, Vec<String
     }
 }
 
-impl IntoDataContainer<phantom::MapVectorInt> for &HashMap<String, Vec<i32>> {
-    fn into_data_container(self) -> DataContainer<'static, phantom::MapVectorInt> {
+impl IntoDataContainer<data_type::MapVectorInt> for &HashMap<String, Vec<i32>> {
+    fn into_data_container(self) -> DataContainer<'static, data_type::MapVectorInt> {
         DataContainer::new_owned(ffi::create_data_container_from_map_vector_int(
             self.iter()
                 .map(|(key, vec)| ffi::MapEntryVectorInt {
@@ -257,8 +248,8 @@ impl IntoDataContainer<phantom::MapVectorInt> for &HashMap<String, Vec<i32>> {
     }
 }
 
-impl IntoDataContainer<phantom::MapVectorComplex> for &HashMap<String, Vec<num::Complex<f32>>> {
-    fn into_data_container(self) -> DataContainer<'static, phantom::MapVectorComplex> {
+impl IntoDataContainer<data_type::MapVectorComplex> for &HashMap<String, Vec<num::Complex<f32>>> {
+    fn into_data_container(self) -> DataContainer<'static, data_type::MapVectorComplex> {
         let converted_data: Vec<(String, Vec<ffi::Complex>)> = self
             .iter()
             .map(|(key, vec)| {
@@ -286,8 +277,8 @@ impl IntoDataContainer<phantom::MapVectorComplex> for &HashMap<String, Vec<num::
     }
 }
 
-impl IntoDataContainer<phantom::MapFloat> for &HashMap<String, f32> {
-    fn into_data_container(self) -> DataContainer<'static, phantom::MapFloat> {
+impl IntoDataContainer<data_type::MapFloat> for &HashMap<String, f32> {
+    fn into_data_container(self) -> DataContainer<'static, data_type::MapFloat> {
         DataContainer::new_owned(ffi::create_data_container_from_map_float(
             self.iter()
                 .map(|(key, &val)| ffi::MapEntryFloat {
@@ -299,10 +290,10 @@ impl IntoDataContainer<phantom::MapFloat> for &HashMap<String, f32> {
     }
 }
 
-impl TryIntoDataContainer<phantom::MatrixFloat> for &[Vec<f32>] {
+impl TryIntoDataContainer<data_type::MatrixFloat> for &[Vec<f32>] {
     fn try_into_data_container(
         self,
-    ) -> Result<DataContainer<'static, phantom::MatrixFloat>, ConversionError> {
+    ) -> Result<DataContainer<'static, data_type::MatrixFloat>, ConversionError> {
         if self.is_empty() {
             return Err(ConversionError::InvalidFormat {
                 message: "Cannot create matrix from empty vector".to_string(),
@@ -347,8 +338,8 @@ impl TryIntoDataContainer<phantom::MatrixFloat> for &[Vec<f32>] {
     }
 }
 
-impl IntoDataContainer<phantom::Pool> for crate::pool::Pool {
-    fn into_data_container(self) -> DataContainer<'static, phantom::Pool> {
+impl IntoDataContainer<data_type::Pool> for crate::pool::Pool {
+    fn into_data_container(self) -> DataContainer<'static, data_type::Pool> {
         DataContainer::new_owned(ffi::create_data_container_from_pool(self.into_owned_ptr()))
     }
 }

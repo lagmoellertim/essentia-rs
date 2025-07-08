@@ -147,7 +147,7 @@ checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 
 [[package]]
 name = "essentia"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "cxx",
  "essentia-codegen",
@@ -157,7 +157,7 @@ dependencies = [
 
 [[package]]
 name = "essentia-codegen"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "convert_case",
  "essentia-core",
@@ -171,7 +171,7 @@ dependencies = [
 
 [[package]]
 name = "essentia-core"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "cxx",
  "essentia-sys",
@@ -183,7 +183,7 @@ dependencies = [
 
 [[package]]
 name = "essentia-sys"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "cxx",
  "cxx-build",

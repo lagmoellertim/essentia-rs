@@ -141,7 +141,7 @@ impl From<DataType> for ffi::DataType {
     }
 }
 
-pub mod phantom {
+pub mod data_type {
     pub struct Any;
 
     // Scalar types
@@ -191,110 +191,110 @@ pub trait HasDataType {
     }
 }
 
-impl HasDataType for phantom::Bool {
+impl HasDataType for data_type::Bool {
     const DATA_TYPE: DataType = DataType::Bool;
 }
 
-impl HasDataType for phantom::String {
+impl HasDataType for data_type::String {
     const DATA_TYPE: DataType = DataType::String;
 }
 
-impl HasDataType for phantom::Int {
+impl HasDataType for data_type::Int {
     const DATA_TYPE: DataType = DataType::Int;
 }
 
-impl HasDataType for phantom::Float {
+impl HasDataType for data_type::Float {
     const DATA_TYPE: DataType = DataType::Float;
 }
 
-impl HasDataType for phantom::UnsignedInt {
+impl HasDataType for data_type::UnsignedInt {
     const DATA_TYPE: DataType = DataType::UnsignedInt;
 }
 
-impl HasDataType for phantom::Long {
+impl HasDataType for data_type::Long {
     const DATA_TYPE: DataType = DataType::Long;
 }
 
-impl HasDataType for phantom::StereoSample {
+impl HasDataType for data_type::StereoSample {
     const DATA_TYPE: DataType = DataType::StereoSample;
 }
 
-impl HasDataType for phantom::Complex {
+impl HasDataType for data_type::Complex {
     const DATA_TYPE: DataType = DataType::Complex;
 }
 
-impl HasDataType for phantom::TensorFloat {
+impl HasDataType for data_type::TensorFloat {
     const DATA_TYPE: DataType = DataType::TensorFloat;
 }
 
-impl HasDataType for phantom::VectorBool {
+impl HasDataType for data_type::VectorBool {
     const DATA_TYPE: DataType = DataType::VectorBool;
 }
 
-impl HasDataType for phantom::VectorString {
+impl HasDataType for data_type::VectorString {
     const DATA_TYPE: DataType = DataType::VectorString;
 }
 
-impl HasDataType for phantom::VectorInt {
+impl HasDataType for data_type::VectorInt {
     const DATA_TYPE: DataType = DataType::VectorInt;
 }
 
-impl HasDataType for phantom::VectorFloat {
+impl HasDataType for data_type::VectorFloat {
     const DATA_TYPE: DataType = DataType::VectorFloat;
 }
 
-impl HasDataType for phantom::VectorStereoSample {
+impl HasDataType for data_type::VectorStereoSample {
     const DATA_TYPE: DataType = DataType::VectorStereoSample;
 }
 
-impl HasDataType for phantom::VectorComplex {
+impl HasDataType for data_type::VectorComplex {
     const DATA_TYPE: DataType = DataType::VectorComplex;
 }
 
-impl HasDataType for phantom::VectorVectorFloat {
+impl HasDataType for data_type::VectorVectorFloat {
     const DATA_TYPE: DataType = DataType::VectorVectorFloat;
 }
 
-impl HasDataType for phantom::VectorVectorString {
+impl HasDataType for data_type::VectorVectorString {
     const DATA_TYPE: DataType = DataType::VectorVectorString;
 }
 
-impl HasDataType for phantom::VectorVectorStereoSample {
+impl HasDataType for data_type::VectorVectorStereoSample {
     const DATA_TYPE: DataType = DataType::VectorVectorStereoSample;
 }
 
-impl HasDataType for phantom::VectorVectorComplex {
+impl HasDataType for data_type::VectorVectorComplex {
     const DATA_TYPE: DataType = DataType::VectorVectorComplex;
 }
 
-impl HasDataType for phantom::VectorMatrixFloat {
+impl HasDataType for data_type::VectorMatrixFloat {
     const DATA_TYPE: DataType = DataType::VectorMatrixFloat;
 }
 
-impl HasDataType for phantom::MatrixFloat {
+impl HasDataType for data_type::MatrixFloat {
     const DATA_TYPE: DataType = DataType::MatrixFloat;
 }
 
-impl HasDataType for phantom::MapVectorFloat {
+impl HasDataType for data_type::MapVectorFloat {
     const DATA_TYPE: DataType = DataType::MapVectorFloat;
 }
 
-impl HasDataType for phantom::MapVectorString {
+impl HasDataType for data_type::MapVectorString {
     const DATA_TYPE: DataType = DataType::MapVectorString;
 }
 
-impl HasDataType for phantom::MapVectorInt {
+impl HasDataType for data_type::MapVectorInt {
     const DATA_TYPE: DataType = DataType::MapVectorInt;
 }
 
-impl HasDataType for phantom::MapVectorComplex {
+impl HasDataType for data_type::MapVectorComplex {
     const DATA_TYPE: DataType = DataType::MapVectorComplex;
 }
 
-impl HasDataType for phantom::MapFloat {
+impl HasDataType for data_type::MapFloat {
     const DATA_TYPE: DataType = DataType::MapFloat;
 }
 
-impl HasDataType for phantom::Pool {
+impl HasDataType for data_type::Pool {
     const DATA_TYPE: DataType = DataType::Pool;
 }
